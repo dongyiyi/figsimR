@@ -1,0 +1,15 @@
+#' Fig wasp community data from Aung et al. 2022
+#'
+#' Community composition of fig wasps associated with *Ficus racemosa* in Xishuangbanna.
+#'
+#' @format A data frame with `n` rows and `m` columns:
+#' \describe{
+#'   \item{Ceratosolen_sp}{Number of emergent individuals of Ceratosolen_sp}
+#'   \item{Sycophaga_testacea}{Number of emergent individuals of Sycophaga_testacea}
+#'   \item{Apocrypta_sp}{Number of emergent individuals of Apocrypta_sp}
+#'   \item{Sycophaga_mayri}{Number of emergent individuals of Sycophaga_mayri}
+#'   \item{Sycophaga_agraensis}{Number of emergent individuals of Sycophaga_agraensis}
+#'   \item{Apocrypta_westwoodi}{Number of emergent individuals of Apocrypta_westwoodi}
+#' }
+#' @source Aung et al. (2022), [https://doi.org/10.1111/1365-2656.13701]
+"observed_data"
