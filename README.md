@@ -1,18 +1,6 @@
 # figsimR
 figsimR is a mechanistic, agent-based simulation package in R that turns process-based hypotheses into executable, testable models of fig wasp community assembly
----
-title: "Using figsimR: Diagnosing the Variation Gap and Dissecting Community Assembly"
-author: "Yiyi Dong"
-date: "`r Sys.Date()`"
-output:
-  rmarkdown::html_vignette:
-    toc: true
-    toc_depth: 2
-vignette: >
-  %\VignetteIndexEntry{Using figsimR: Diagnosing the Variation Gap and Dissecting Community Assembly}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
+
 ```{r setup_progressr, include=FALSE}
 
 safe_handlers <- function(...) {
