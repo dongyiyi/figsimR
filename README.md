@@ -1,17 +1,39 @@
 # figsimR
 figsimR is a mechanistic, agent-based simulation package in R that turns process-based hypotheses into executable, testable models of fig wasp community assembly
 
-# figsimR package install
+# figsimR: Installation
 ```
-# local install
-install.packages("path/figsimR_0.1.0.tar.gz", repos = NULL, type = "source")
+# 1) GitHub (recommended)
+# install.packages("remotes")     # if needed
+remotes::install_github("dongyiyi/figsimR")
+library(figsimR)
 
+# (optional) build vignettes
+# remotes::install_github("dongyiyi/figsimR", build_vignettes = TRUE)
+# requires: rmarkdown, knitr, pandoc
+
+# 2) Using pak (fast dependency solver)
+# install.packages("pak")
+pak::pak("dongyiyi/figsimR")
+library(figsimR)
+
+# 3) From a local tarball (offline)
+# replace with your actual file path:
+install.packages("path/to/figsimR_0.1.0.tar.gz", repos = NULL, type = "source")
+library(figsimR)
+
+# 4) From a local source directory (after git clone)
+# git clone https://github.com/dongyiyi/figsimR.git
+# then in R (point to the folder or tar.gz):
+# install.packages("devtools")    # if needed
+devtools::install_local("path/to/figsimR", upgrade = "never")
+# or: devtools::install_local("path/to/figsimR_0.1.0.tar.gz")
+library(figsimR)
 ```
 
 ```{r setup-library, echo=FALSE}
-# set seed and load library in a separate, non-displayed chunk
+# set seed
 set.seed(123)
-library(figsimR)
 
 # loading packages
 library(igraph)
