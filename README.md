@@ -1,46 +1,11 @@
 # figsimR
 figsimR is a mechanistic, agent-based simulation package in R that turns process-based hypotheses into executable, testable models of fig wasp community assembly
 
-```{r setup_progressr, include=FALSE}
-
-safe_handlers <- function(...) {
-  if (requireNamespace("progressr", quietly = TRUE)) {
-    try(safe_handlers(...), silent = TRUE)
-  }
-}
-
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-
-has_progressr <- requireNamespace("progressr", quietly = TRUE)
-# Avoid parallel errors on CRAN/check
-if (requireNamespace("future", quietly = TRUE)) {
-  if (identical(Sys.getenv("_R_CHECK_LIMIT_CORES_"), "TRUE")) {
-    future::plan("sequential")
-  } else {
-    future::plan("multisession")
-  }
-}
-
-with_p <- if (has_progressr) progressr::with_progress else function(expr) force(expr)
-p_factory <- if (has_progressr) progressr::progressor else function(...) { function(...) {} }
+# figsimR package install
 ```
+# local install
+install.packages("path/figsimR_0.1.0.tar.gz", repos = NULL, type = "source")
 
-
-```{r setup, include=FALSE}
-# Global chunk options for a fast, deterministic vignette
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  message = FALSE,
-  warning = FALSE,
-  fig.width = 6,
-  fig.height = 4,
-  dpi = 120,
-  cache = FALSE
-)
-
-# We'll keep heavy computations disabled by default in the vignette.
-RUN_HEAVY <- FALSE
 ```
 
 ```{r setup-library, echo=FALSE}
