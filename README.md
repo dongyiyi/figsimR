@@ -1,7 +1,7 @@
 # figsimR
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check-vignettes.yml/badge.svg)](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check-vignettes.yml)
+[![R-CMD-check](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml)
 <!-- badges: end -->
 
 
