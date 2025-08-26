@@ -43,8 +43,11 @@ Suggests:
     stringr,
     testthat (>= 3.0.0),
     knitr,
+    ggpubr,
+    covr,
     rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
 Packaged: 2025-07-24 03:29:01 UTC; dongy
 Config/testthat/edition: 3
+
