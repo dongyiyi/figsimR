@@ -46,8 +46,9 @@ Suggests:
     ggpubr,
     covr,
     rmarkdown
-VignetteBuilder: knitr
+VignetteBuilder: knitr, rmarkdown
 NeedsCompilation: no
 Packaged: 2025-07-24 03:29:01 UTC; dongy
 Config/testthat/edition: 3
+
 
