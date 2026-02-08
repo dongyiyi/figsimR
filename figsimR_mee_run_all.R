@@ -231,7 +231,7 @@ sim_sum <- sim_long %>%
     q95_hi = quantile(val, 0.975),
     .groups = "drop"
   ) %>%
-  mutate(sim_sd = pmax(sim_sd, .Machine$double.eps))  # 保护
+  mutate(sim_sd = pmax(sim_sd, .Machine$double.eps))  
 
 # --- Observed mean (from its bootstrap-of-means)
 obs_mu <- resample_observed_metrics_df_results %>%
@@ -282,7 +282,7 @@ figure_2 <- ggplot(dash, aes(y = metric_lab)) +
   geom_segment(aes(x = z80_lo, xend = z80_hi, yend = metric_lab),
                linewidth = 4, color = "#5DADE2", lineend = "round") +
   
-  # FIM Mean (reference line)
+  # BCM Mean (reference line)
   geom_vline(xintercept = 0, linetype = "dashed", color = "grey40") +
   
   # Observed Mean points (using the capped values for plotting)
@@ -304,10 +304,10 @@ figure_2 <- ggplot(dash, aes(y = metric_lab)) +
   scale_color_manual(values = cols, name = "Observed Mean Position:", breaks = band_labels) +
   scale_x_continuous(limits = c(-3.5, 4.5), breaks = seq(-2, 2, 2)) +
   labs(
-    #title = "Figure 2. The FIM Accurately Recovers Empirical Central Tendencies",
-    #subtitle = "Most observed community metric means fall within the FIM's 80% predictive interval.",
+    #title = "Figure 2. The BCM Accurately Recovers Empirical Central Tendencies",
+    #subtitle = "Most observed community metric means fall within the BCM's 80% predictive interval.",
     y = NULL,
-    x = "Standardized Deviation from FIM Mean"
+    x = "Standardized Deviation from BCM Mean"
   ) +
   
   # Theme
@@ -355,8 +355,8 @@ hell_sim <- decostand(as.matrix(sim_comm_mat), method = "hellinger")
 # Combine for a single Euclidean geometry
 X        <- rbind(hell_obs, hell_sim)
 grp      <- factor(c(rep("Observed", nrow(hell_obs)),
-                     rep("FIM",      nrow(hell_sim))),
-                   levels = c("FIM", "Observed"))
+                     rep("BCM",      nrow(hell_sim))),
+                   levels = c("BCM", "Observed"))
 
 
 # obs_comm_mat / sim_comm_mat: rows = figs, cols = species (counts)
@@ -374,8 +374,8 @@ dispersion_test <- function(obs_comm_mat, sim_comm_mat,
     Xsim <- as.matrix(sim_comm_mat)
   }
   grp <- factor(c(rep("Observed", nrow(Xobs)),
-                  rep("FIM",      nrow(Xsim))),
-                levels = c("FIM", "Observed"))
+                  rep("BCM",      nrow(Xsim))),
+                levels = c("BCM", "Observed"))
   X <- rbind(Xobs, Xsim)
   
   # 2) Distances & betadisper
@@ -388,7 +388,7 @@ dispersion_test <- function(obs_comm_mat, sim_comm_mat,
   
   # 4) Means & ratio
   mu  <- tapply(bd$distances, grp, mean)  # mean distance to centroid per group
-  rho <- unname(mu["Observed"] / mu["FIM"])
+  rho <- unname(mu["Observed"] / mu["BCM"])
   p   <- prm$tab[1, "Pr(>F)"]
   
   list(
@@ -404,7 +404,7 @@ res <- dispersion_test(obs_comm_mat, sim_comm_mat, permutations = 999)
 res$rho  # dispersion ratio: 1.331619
 res$p    # permutation p-value: 0.001
 res$means
-# FIM  Observed 
+# BCM  Observed 
 # 0.3835673 0.5107653
 
 
@@ -425,7 +425,7 @@ var_exp2 <- round(100 * eig_pos[2] / sum(eig_pos), 1)
 fg3_panela <- ggplot(scores, aes(PC1, PC2, color = group)) +
   geom_point(alpha = 0.55, size = 1) +
   stat_ellipse(level = 0.95, linewidth = 0.2) +
-  scale_color_manual(values = c(FIM = pal_sim, Observed = pal_obs), name = NULL) +
+  scale_color_manual(values = c(BCM = pal_sim, Observed = pal_obs), name = NULL) +
   labs(#title = "A   Multivariate separation (PCoA on Hellinger–Euclidean)",
        x = paste0("PC1 (", var_exp1, "%)"),
        y = paste0("PC2 (", var_exp2, "%)")) +
@@ -444,7 +444,7 @@ dist_df <- tibble(distance = bd$distances,
 
 # Effect size: ratio of mean distances
 mean_dist <- dist_df %>% group_by(group) %>% summarise(mu = mean(distance), .groups = "drop")
-rho <- with(mean_dist, mu[group=="Observed"] / mu[group=="FIM"])
+rho <- with(mean_dist, mu[group=="Observed"] / mu[group=="BCM"])
 rho_lab <- sprintf("Dispersion ratio ρ = %.2f;  perm p = %.3f",
                    rho, perm$tab[1, "Pr(>F)"])
 
@@ -452,8 +452,8 @@ fg3_panelb <- ggplot(dist_df, aes(x = distance, fill = group, color = group)) +
   geom_density(alpha = 0.25, adjust = 1) +
   geom_vline(data = mean_dist, aes(xintercept = mu, color = group),
              linetype = "dashed") +
-  scale_fill_manual(values = c(FIM = pal_sim, Observed = pal_obs), name = NULL) +
-  scale_color_manual(values = c(FIM = pal_sim, Observed = pal_obs), name = NULL) +
+  scale_fill_manual(values = c(BCM = pal_sim, Observed = pal_obs), name = NULL) +
+  scale_color_manual(values = c(BCM = pal_sim, Observed = pal_obs), name = NULL) +
   labs(#title = "B   Multivariate dispersion (distance to group centroid)",
        #subtitle = rho_lab,
        x = "Distance to centroid", y = "Density") +
@@ -555,7 +555,7 @@ fg3_panelc <- ggplot(qc, aes(x = q)) +
   # 
   labs(
     #title = "C   Scalar Coverage and Quantile Diagnostics",
-    #subtitle = "Observed quantiles (orange line) compared to the FIM's predictive intervals (grey bands)",
+    #subtitle = "Observed quantiles (orange line) compared to the BCM's predictive intervals (grey bands)",
     x = "Quantile of the Distribution",
     y = "Metric Value"
   ) +
@@ -586,17 +586,17 @@ ggsave("Figure 3.pdf", figure_3, width = 240, height = 100, units = "mm", dpi = 
 ######################## Experiment III: Dissecting the Importance of Intrinsic Mechanisms via Perturbation Analysis ########################
 
 # Run a set of reduced model configurations to test the necessity of specific intrinsic mechanisms.
-# Each entry modifies one key mechanism in the Full Intrinsic Model (FIM) while keeping other parameters fixed.
+# Each entry modifies one key mechanism in the baseline configuration modeling (BCM) while keeping other parameters fixed.
 
-fim_reduced_results <- list(
-  run_fim_reduced_experiment("FIM", lhs_optimize_parameter, species_list),  # Remove spatial layering
-  run_fim_reduced_experiment("FIM_No_space", lhs_optimize_parameter, species_list, use_layering = FALSE, use_layer_preference = FALSE),  # Remove spatial layering
-  run_fim_reduced_experiment("FIM_No_sanction", lhs_optimize_parameter, species_list, host_sanction = 1),                                # Disable host sanctioning
-  run_fim_reduced_experiment("FIM_No_temporal", lhs_optimize_parameter, species_list, use_egg_success_by_phase = FALSE)                # Remove phenological effects
+BCM_reduced_results <- list(
+  run_bcm_reduced_experiment("BCM", lhs_optimize_parameter, species_list),  # Remove spatial layering
+  run_bcm_reduced_experiment("BCM_No_space", lhs_optimize_parameter, species_list, use_layering = FALSE, use_layer_preference = FALSE),  # Remove spatial layering
+  run_bcm_reduced_experiment("BCM_No_sanction", lhs_optimize_parameter, species_list, host_sanction = 1),                                # Disable host sanctioning
+  run_bcm_reduced_experiment("BCM_No_temporal", lhs_optimize_parameter, species_list, use_egg_success_by_phase = FALSE)                # Remove phenological effects
   )
 
 # Combine the outputs from each model variant into a single data frame
-metrics_reduced_models <- bind_rows(fim_reduced_results)
+metrics_reduced_models <- bind_rows(bcm_reduced_results)
 
 # observed data matrics
 bootstrap_metrics_observed <- resample_observed_metrics_df_results %>%
@@ -614,7 +614,7 @@ colnames(bootstrap_metrics_observed) <- c("Richness", "Pielou's Evenness", "Bray
 metric_cols <- c("Richness","Pielou's Evenness","Bray-Curtis Dissimilarity",
                  "Nestedness","Connectance","Modularity")
 
-#  KO + FIM
+#  KO + BCM
 sim_boot <- metrics_reduced_models %>%
   select(all_of(metric_cols), Source)
 
@@ -624,9 +624,9 @@ obs_boot <- bootstrap_metrics_observed %>%
 
 # 
 unique(sim_boot$Source)
-# "FIM", "FIM_No_space", "FIM_No_sanction", "FIM_No_temporal"
+# "BCM", "BCM_No_space", "BCM_No_sanction", "BCM_No_temporal"
 
-# ---------- 1) ΔLoss （FIM）----------
+# ---------- 1) ΔLoss （BCM）----------
 # Loss(M) = sum_i ( mean_sim_i(M) - mean_obs_i )^2
 
 obs_means <- obs_boot %>%
@@ -645,15 +645,15 @@ loss_by_model <- sim_means %>%
   group_by(Source) %>%
   summarise(Loss = sum((sim_mu - obs_mu)^2), .groups="drop")
 
-Loss_FIM <- loss_by_model %>% filter(Source == "FIM") %>% pull(Loss)
+Loss_BCM <- loss_by_model %>% filter(Source == "BCM") %>% pull(Loss)
 
 delta_loss <- loss_by_model %>%
-  filter(Source != "FIM") %>%
-  mutate(dLoss = Loss - Loss_FIM) %>%
+  filter(Source != "BCM") %>%
+  mutate(dLoss = Loss - Loss_BCM) %>%
   select(Source, dLoss)
 
 
-# ---------- 2) ΔCoverage（pp， FIM）----
+# ---------- 2) ΔCoverage（pp， BCM）----
 q_levels <- c(0.05, 0.25, 0.50, 0.75, 0.95)
 
 boot_quantile <- function(v, q, B=1000){
@@ -718,15 +718,15 @@ mean_exceed_norm <- function(env_df, obs_q_df){
 }
 
 # 
-env_FIM   <- envelope_for_model(sim_boot |> dplyr::filter(Source=="FIM"), metric_cols, B=1000)
-marg_FIM  <- mean_exceed_norm(env_FIM, obs_q)
+env_BCM   <- envelope_for_model(sim_boot |> dplyr::filter(Source=="BCM"), metric_cols, B=1000)
+marg_BCM  <- mean_exceed_norm(env_BCM, obs_q)
 
 # 
-sources_KO <- setdiff(unique(sim_boot$Source), "FIM")
+sources_KO <- setdiff(unique(sim_boot$Source), "BCM")
 delta_cov_cont <- purrr::map_dfr(sources_KO, function(src){
   env_KO  <- envelope_for_model(sim_boot |> dplyr::filter(Source==src), metric_cols, B=1000)
   marg_KO <- mean_exceed_norm(env_KO, obs_q)
-  tibble::tibble(Source = src, dCov_cont = marg_KO - marg_FIM)
+  tibble::tibble(Source = src, dCov_cont = marg_KO - marg_BCM)
 })
 
 
@@ -734,7 +734,7 @@ delta_cov_cont <- purrr::map_dfr(sources_KO, function(src){
 
 
 # 
-sim_FIM <- simulate_figwasp_community(
+sim_BCM <- simulate_figwasp_community(
   num_figs                 = 1000,
   fecundity_mean           = lhs_optimize_parameter$fecundity_mean,
   fecundity_dispersion     = lhs_optimize_parameter$fecundity_dispersion,
@@ -753,10 +753,10 @@ sim_FIM <- simulate_figwasp_community(
   seed                     = 42
 )
 
-sim_FIM <- sim_FIM$summary
-sim_FIM <- sim_FIM[,c(18:23)]
-colnames(sim_FIM) <- gsub("^emergence_", "", colnames(sim_FIM))
-sim_FIM <- sim_FIM[, match(colnames(obs_comm_mat), colnames(sim_FIM))]
+sim_BCM <- sim_BCM$summary
+sim_BCM <- sim_BCM[,c(18:23)]
+colnames(sim_BCM) <- gsub("^emergence_", "", colnames(sim_BCM))
+sim_BCM <- sim_BCM[, match(colnames(obs_comm_mat), colnames(sim_BCM))]
 
 
 # KO: sim_KO_space
@@ -867,7 +867,7 @@ compute_rho_matched_fast <- function(obs_comm, sim_comm, reps = 200, seed = 42) 
 }
 
 
-rho_FIM   <- compute_rho_matched_fast(obs_comm_mat, sim_FIM, reps = 200)
+rho_BCM   <- compute_rho_matched_fast(obs_comm_mat, sim_BCM, reps = 200)
 rho_space <- compute_rho_matched_fast(obs_comm_mat, sim_KO_space, reps = 200)
 rho_sanc  <- compute_rho_matched_fast(obs_comm_mat, sim_KO_sanction, reps = 200)
 rho_temp  <- compute_rho_matched_fast(obs_comm_mat, sim_KO_temporal, reps = 200)
@@ -875,10 +875,10 @@ rho_temp  <- compute_rho_matched_fast(obs_comm_mat, sim_KO_temporal, reps = 200)
 
 
 dRho_tbl <- tibble(
-  Source   = c("FIM_No_space","FIM_No_sanction","FIM_No_temporal"),
-  dRho_pct = c(100*(rho_space["mean"]/rho_FIM["mean"]-1),
-               100*(rho_sanc["mean"]/rho_FIM["mean"]-1),
-               100*(rho_temp["mean"]/rho_FIM["mean"]-1))
+  Source   = c("BCM_No_space","BCM_No_sanction","BCM_No_temporal"),
+  dRho_pct = c(100*(rho_space["mean"]/rho_BCM["mean"]-1),
+               100*(rho_sanc["mean"]/rho_BCM["mean"]-1),
+               100*(rho_temp["mean"]/rho_BCM["mean"]-1))
 )
 
 
@@ -891,9 +891,9 @@ fig4_summary <- delta_loss |>
   dplyr::inner_join(dRho_tbl,     by="Source") |>
   dplyr::mutate(
     label = dplyr::recode(Source,
-                          FIM_No_space    = "KO: Spatial partitioning",
-                          FIM_No_sanction = "KO: Host sanctions",
-                          FIM_No_temporal = "KO: Phase-specific success"
+                          BCM_No_space    = "KO: Spatial partitioning",
+                          BCM_No_sanction = "KO: Host sanctions",
+                          BCM_No_temporal = "KO: Phase-specific success"
     ),
     zLoss = scale_safe(dLoss),
     zCov  = scale_safe(dCov_cont),
@@ -914,7 +914,7 @@ fg4_panela <- ggplot(fig4_summary, aes(x = dLoss, y = label)) +
   scale_x_continuous(labels = label_number(big.mark=",")) +
   labs(
     #title = "A. Impact on Mean Fit (ΔLoss)",
-    x = "Increase in Total Loss (relative to FIM)",
+    x = "Increase in Total Loss (relative to BCM)",
     y = NULL
   ) +
   theme_classic(base_size = 9, base_family = "Arial") +
@@ -933,7 +933,7 @@ fg4_panelb <- ggplot(fig4_summary, aes(x = dCov_cont, y = label)) +
             vjust = 0.5, size = 2) +
   labs(
     #title = "B. Impact on Variance Adequacy (continuous gap)",
-       x = "Increase in normalized out-of-band gap (relative to FIM)",
+       x = "Increase in normalized out-of-band gap (relative to BCM)",
        y = NULL) +
   theme_classic(base_size = 9, base_family = "Arial") +
   theme(
@@ -948,6 +948,7 @@ figure_4 <- fg4_panela + fg4_panelb +  plot_layout(ncol = 2, nrow = 2, widths = 
 figure_4
 
 ggsave("Figure 4.pdf", figure_4, width = 183, height = 100, units = "mm", dpi = 500)
+
 
 
 
