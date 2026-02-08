@@ -18,101 +18,49 @@
 #' Default species and parameter values are provided in \code{\link{species_list}} and \code{\link{parameter_list_default}}.
 #'
 #' @param num_figs Integer. Number of fig fruits to simulate. Each fig will be treated as a discrete community.
+#' @param fig_diameter_mean Numeric. Mean fig diameter (in cm).
+#' @param fig_diameter_sd Numeric. SD of fig diameter.
+#' @param k Numeric. Scaling constant for estimating flower number from fig diameter.
+#' @param alpha Numeric. Exponent in the diameter–flower power-law.
+#' @param max_entry_table Named numeric vector. Per-species entry caps (scaled by fig size).
+#' @param fecundity_mean, fecundity_dispersion Named numeric vectors for NB fecundity.
+#' @param entry_mu, entry_size Named numeric vectors controlling entry distribution.
+#' @param entry_priority Named list of phases and species.
+#' @param species_roles List with $guild, $hosts, $parasitoid.
+#' @param entry_distribution "nb" or "lognormal".
+#' @param interaction_matrix Optional numeric matrix (pairwise interactions).
+#' @param interaction_weight Numeric. Strength of interaction effects.
+#' @param seed RNG seed (optional).
+#' @param egg_success_prob Global oviposition success (if not using phase-specific).
+#' @param egg_success_prob_by_phase List of per-phase success probs by species.
+#' @param parasitism_prob Named numeric vector for supplemental parasitism.
+#' @param layer_preference Named list of layer probabilities per species.
+#' @param p_pollination_per_ovule Numeric [0–1]. Background pollination to seeds.
+#' @param p_no_entry Numeric [0–1]. Probability a fig receives no entries.
+#' @param host_sanction Numeric [0–1]. Legacy overuse threshold for drop logic.
+#' @param fig_diameter_min, fig_diameter_max Numeric. Truncation bounds (if used).
+#' @param record_individual Logical. If TRUE, per-individual oviposition recorded.
+#' @param use_layering,use_layer_preference Logical switches for layering.
+#' @param enable_drop Logical. Enable legacy drop (host_sanction) mechanism.
+#' @param drop_cancels_emergence Logical. If FALSE, dropped figs yield zero output.
+#' @param use_supplemental_parasitism Logical.
+#' @param use_flower_limit Logical.
+#' @param use_egg_success_by_phase Logical.
 #'
-#' @param fig_diameter_mean Numeric. Mean fig diameter (in cm). Used to generate per-fig flower number via the formula:
-#'   \code{flower_count = k × diameter^\\alpha × Gamma(shape = 20, scale = 0.1)}. Larger diameters yield more ovules.
+#' @param use_sink_strength Logical. If TRUE, compute sink-strength metrics but
+#'   do NOT alter legacy drop decision. Adds columns: sink_strength, sink_prop,
+#'   sink_below_min, sink_above_max.
+#' @param sink_w_gall Numeric in [0, +). Per-ovule sink weight for galled ovules (default 1.0).
+#' @param sink_w_seed Numeric in [0, +). Per-ovule sink weight for seeds (default 1.5).
+#' @param sink_linear_coef Numeric. Global multiplier on sink strength (default 1.0).
+#' @param sink_min_prop Numeric in [0,1]. Reference lower bound of sink proportion (default 0.20).
+#' @param sink_max_prop Numeric in [0,1]. Reference upper bound of sink proportion (default 0.95).
 #'
-#' @param fig_diameter_sd Numeric. Standard deviation of fig diameter. Each fig's diameter is drawn from a normal distribution with this mean and SD.
-#'
-#' @param k Numeric. Scaling constant for estimating flower number from fig diameter. Represents average number of flowers per cm^\code{alpha}.
-#'
-#' @param alpha Numeric. Exponent in the power-law relationship between fig diameter and flower number. Empirically estimated around 1.2–1.4 for many figs.
-#'
-#' @param fig_diameter_max Maximum fig diameter used to cap values (optional).
-#'
-#' @param max_entry_table Named numeric vector. Maximum number of individuals of each species that can enter a fig, scaled by fig size. Used to truncate simulated entry counts.
-#'
-#' @param fecundity_mean Named numeric vector. Mean number of eggs laid per female individual, per species. Used as \code{mu} in a negative binomial distribution.
-#'
-#' @param fecundity_dispersion Named numeric vector. Dispersion parameter for fecundity (size in NB distribution). Controls variability in egg output across individuals.
-#'
-#' @param entry_mu Named numeric vector. Mean number of individuals of each species attempting to enter each fig. Acts as expected value for entry distribution.
-#'
-#' @param entry_size Named numeric vector. Controls variation in entry distribution:
-#'   \itemize{
-#'     \item For \code{entry_distribution = "nb"}: used as NB size parameter.
-#'     \item For \code{"lognormal"}: used to derive \code{sdlog = 1 / sqrt(entry_size)}.
-#'   }
-#'
-#' @param entry_priority Named list. Defines the temporal entry order of species. Each element is a phase (e.g., \code{phase1}), with a vector of species names. Earlier phases enter first and may influence resource or host availability for later phases.
-#'
-#' @param species_roles List. Defines the ecological roles and interactions of all species. Contains three components:
-#'   \itemize{
-#'     \item \code{guild}: character vector assigning each species to \code{"pollinator"}, \code{"galler"}, or \code{"parasitoid"}.
-#'     \item \code{hosts}: list mapping parasitoids to their hosts.
-#'     \item \code{parasitoid}: list mapping hosts to their attacking parasitoids.
-#'   }
-#'   This structure defines trophic constraints (e.g., parasitoids cannot oviposit unless their hosts are present).
-#'
-#' @param entry_distribution Character. Either \code{"nb"} (negative binomial) or \code{"lognormal"}.
-#'   Defines how per-species entry numbers are simulated:
-#'   \itemize{
-#'     \item \code{"nb"}: entries are drawn from NB(\code{mu = entry_mu}, \code{size = entry_size}).
-#'     \item \code{"lognormal"}: \code{log(entry_mu) - 0.5} used as \code{meanlog}; \code{sdlog = 1 / sqrt(entry_size)}; result used as Poisson rate.
-#'   }
-#'
-#' @param interaction_matrix Optional numeric matrix. Square matrix defining pairwise interspecific interactions. Each entry affects the entry probability of other species via:
-#'   \code{adjusted_mu = entry_mu × exp(interaction_weight × interaction_sum)}.
-#'
-#' @param interaction_weight Numeric. Controls strength of interspecific interactions as defined in \code{interaction_matrix}. 0 means no effect.
-#'
-#' @param seed Integer or NULL. If set, controls random number generation for reproducibility.
-#'
-#' @param egg_success_prob Named numeric vector. Global probability that a single oviposition attempt results in a successful egg. Applies when \code{use_egg_success_by_phase = FALSE}.
-#'
-#' @param egg_success_prob_by_phase Nested list. Overrides global success probabilities by entry phase. Format: \code{species_name = list(phase1 = 0.5, phase2 = 0.7, ...)}.
-#'
-#' @param parasitism_prob Named numeric vector. Probability that supplemental parasitism occurs for each parasitoid species. Used only if \code{use_supplemental_parasitism = TRUE}.
-#'
-#' @param layer_preference Named list. For each species, a named numeric vector giving probabilities of oviposition in \code{core}, \code{mid}, and \code{outer} flower layers. Sum must be 1. Used only if \code{use_layering = TRUE}.
-#'
-#' @param p_pollination_per_ovule Numeric [0–1]. Probability that each unused ovule becomes a viable seed, representing background pollination efficiency.
-#'
-#' @param p_no_entry Numeric [0–1]. Probability that a fig receives no wasp entries. Simulates failed colonization events.
-#'
-#' @param host_sanction Numeric [0–1]. Threshold of flower use (e.g., 0.8). If exceeded, the fig may abort (drop) due to excessive exploitation by wasps.
-#'
-#' @param fig_diameter_min, fig_diameter_max Numeric. Truncate simulated diameters (and thus flower counts) to a biologically reasonable range.
-#'
-#' @param record_individual Logical. If \code{TRUE}, the function returns an additional element \code{individual_eggs}, which records per-individual oviposition events (vector of eggs per female).
-#'
-#' @param use_layering Logical. If \code{TRUE}, fig flowers are divided into spatial layers (core, mid, outer).
-#'
-#' @param use_layer_preference Logical. If \code{TRUE}, species will preferentially oviposit in specific layers as defined in \code{layer_preference}.
-#'
-#' @param enable_drop Logical. Enables fig abortion due to host sanctions. If flower use proportion exceeds \code{host_sanction}, fig may abort.
-#'
-#' @param drop_cancels_emergence Logical. If \code{FALSE}, dropped figs produce zero emergence and seeds. If \code{TRUE}, their output remains.
-#'
-#' @param use_supplemental_parasitism Logical. Enables additional parasitoid attack if hosts exist but parasitoid did not enter during regular phases.
-#'
-#' @param use_flower_limit Logical. If \code{TRUE}, clamps fig diameter between \code{fig_diameter_min} and \code{fig_diameter_max} before calculating flower number.
-#'
-#' @param use_egg_success_by_phase Logical. If \code{TRUE}, uses phase-specific success probabilities (if defined).
-
-#'
-#' @return A list containing:
-#' \itemize{
-#'   \item \code{summary}: A data.frame with per-fig simulation outputs, including:
-#'     \code{fig_diameter}, \code{flower_count}, \code{resource_use},
-#'     \code{entry_<species>}, \code{eggs_<species>}, \code{emergence_<species>},
-#'     \code{seeds}, \code{failed_ovules}, \code{drop_prob}, \code{is_dropped}.
-#'   \item \code{individual_eggs} (optional): List of individual-level egg counts.
-#' }
-#'
+#' @return list(summary = data.frame(...), individual_eggs = list() if requested)
 #' @examples
 #' data(species_list)
 #' data(parameter_list_default)
+#' set.seed(123)
 #' sim_result <- simulate_figwasp_community(
 #'   num_figs = 10,
 #'   fecundity_mean = parameter_list_default$fecundity_mean,
@@ -128,13 +76,16 @@
 #'   egg_success_prob_by_phase = parameter_list_default$egg_success_prob_by_phase,
 #'   parasitism_prob = parameter_list_default$parasitism_prob,
 #'   layer_preference = parameter_list_default$layer_preference,
-#'   record_individual = FALSE
+#'   record_individual = TRUE,
+#'   use_sink_strength = TRUE,
+#'   sink_w_gall = 1.0,
+#'   sink_w_seed = 1.5,
+#'   sink_linear_coef = 1.0,
+#'   sink_min_prop = 0.20,
+#'   sink_max_prop = 0.95
 #' )
 #' head(sim_result$summary)
-#'
 #' @export
-
-
 simulate_figwasp_community <- function(
     num_figs = 1000,
     fig_diameter_mean = 2.5,
@@ -170,7 +121,15 @@ simulate_figwasp_community <- function(
     drop_cancels_emergence = FALSE,
     use_supplemental_parasitism = FALSE,
     use_flower_limit = TRUE,
-    use_egg_success_by_phase = TRUE
+    use_egg_success_by_phase = TRUE,
+
+    # sink metrics (diagnostic-only)
+    use_sink_strength = FALSE,
+    sink_w_gall = 1.0,
+    sink_w_seed = 1.5,
+    sink_linear_coef = 1.0,
+    sink_min_prop = 0.20,
+    sink_max_prop = 0.95
 ) {
   if (!is.null(seed)) set.seed(seed)
 
@@ -207,7 +166,6 @@ simulate_figwasp_community <- function(
   entry_mat <- matrix(0L, nrow = num_figs, ncol = length(species_names))
   colnames(entry_mat) <- species_names
   if (record_individual) individual_records <- list()
-
 
   if (use_layering && use_layer_preference && is.null(layer_preference)) {
     layer_preference <- list(
@@ -319,6 +277,7 @@ simulate_figwasp_community <- function(
     }
   }
 
+  # Emergence after parasitism
   for (sp in species_names) {
     parasitoids <- species_roles$parasitoid[[sp]]
     parasite_total <- if (length(parasitoids) == 0) rep(0, nrow(df)) else {
@@ -329,11 +288,39 @@ simulate_figwasp_community <- function(
     df[[paste0("emergence_", sp)]] <- pmax(df[[paste0("eggs_", sp)]] - parasite_total, 0)
   }
 
+  # Seeds & failures from unoccupied flowers
   df$unoccupied_flowers <- pmax(df$flower_count - df$resource_use, 0)
   df$seeds <- rbinom(n = num_figs, size = df$unoccupied_flowers, prob = p_pollination_per_ovule)
   df$failed_ovules <- df$unoccupied_flowers - df$seeds
   df$used_flowers <- df$resource_use + df$seeds + df$failed_ovules
-  df$resource_ratio <- df$resource_use / df$flower_count
+  df$resource_ratio <- ifelse(df$flower_count > 0, df$resource_use / df$flower_count, 0)
+
+  # --- sink-strength metrics ---
+  if (use_sink_strength) {
+    pollinators <- names(species_roles$guild)[species_roles$guild == "pollinator"]
+    gallers     <- names(species_roles$guild)[species_roles$guild == "galler"]
+
+    galled_total <- 0L
+    if (length(pollinators)) galled_total <- galled_total + rowSums(df[, paste0("eggs_", pollinators), drop = FALSE])
+    if (length(gallers))     galled_total <- galled_total + rowSums(df[, paste0("eggs_", gallers),     drop = FALSE])
+
+    seed_count <- df$seeds
+
+    sink_strength <- sink_linear_coef * (sink_w_gall * galled_total + sink_w_seed * seed_count)
+    w_max <- max(sink_w_seed, sink_w_gall)
+    sink_prop <- ifelse(df$flower_count > 0, sink_strength / (w_max * df$flower_count), 0)
+
+    df$sink_strength  <- as.numeric(sink_strength)
+    df$sink_prop      <- as.numeric(sink_prop)
+    df$sink_below_min <- sink_prop < sink_min_prop
+    df$sink_above_max <- sink_prop > sink_max_prop
+  } else {
+    df$sink_strength  <- NA_real_
+    df$sink_prop      <- NA_real_
+    df$sink_below_min <- NA
+    df$sink_above_max <- NA
+  }
+
 
   if (enable_drop) {
     drop_slope <- 10
@@ -348,11 +335,8 @@ simulate_figwasp_community <- function(
   if (enable_drop && !drop_cancels_emergence) {
     dropped_idx <- which(df$is_dropped == 1)
     if (length(dropped_idx) > 0) {
-
       emergence_cols <- grep("^emergence_", names(df), value = TRUE)
       df[dropped_idx, emergence_cols] <- 0
-
-
       df$seeds[dropped_idx] <- 0
       df$failed_ovules[dropped_idx] <- 0
     }

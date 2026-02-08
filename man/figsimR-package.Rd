@@ -6,6 +6,6 @@
 \alias{figsimR-package}
 \title{figsimR: Simulating Fig Wasp Community Assembly}
 \description{
-Simulates the assembly and structure of fig wasp communities within fig fruits (Ficus racemosa), capturing ecological processes such as entry order, parasitism, spatial oviposition constraints, resource limitation, and fruit abortion. Designed for ecological modeling and hypothesis testing using empirical parameters.
+Simulates the assembly and structure of fig wasp communities within fig fruits (Ficus racemosa), capturing ecological processes such as entry order, parasitism, spatial oviposition constraints, resource limitation, and fruit abortion. Designed for ecological modeling and hypothesis testing using empirical parameters. Current version 0.2.0 is integrated with the "sink strength" theory.
 }
 \keyword{internal}

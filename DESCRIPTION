@@ -1,26 +1,50 @@
 Package: figsimR
 Type: Package
 Title: Simulating Fig Wasp Community Assembly
-Version: 0.1.0
+Version: 0.2.0
 Author: Yiyi Dong
 Maintainer: Yiyi Dong <dongyiyi09@hotmail.com>
 Description: Simulates the assembly and structure of fig wasp communities 
     within fig fruits (Ficus racemosa), capturing ecological processes such as 
     entry order, parasitism, spatial oviposition constraints, resource limitation, 
     and fruit abortion. Designed for ecological modeling and hypothesis testing 
-    using empirical parameters.
+    using empirical parameters. Current version 0.2.0 is integrated with the "sink strength" theory.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.5)
 RoxygenNote: 7.3.2
-Imports: vegan, dplyr, bipartite, igraph, ggplot2, FSA, progressr, lhs,
-        stats, future, future.apply, gridExtra, magrittr, purrr, rlang,
-        tidyr
-Suggests: Hmsc, RColorBrewer, betapart, ggraph, grid, patchwork,
-        rBayesianOptimization, reshape2, stringr, testthat (>= 3.0.0),
-        knitr, rmarkdown
+Imports: 
+    vegan,
+    dplyr,
+    bipartite,
+    igraph,
+    ggplot2,
+    FSA,
+    progressr,
+    lhs,
+    stats,
+    future,
+    future.apply,
+    gridExtra,
+    magrittr,
+    purrr,
+    rlang,
+    tidyr
+Suggests: 
+    Hmsc,
+    RColorBrewer,
+    betapart,
+    ggraph,
+    grid,
+    patchwork,
+    rBayesianOptimization,
+    reshape2,
+    stringr,
+    testthat (>= 3.0.0),
+    knitr,
+    rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2025-08-15 00:42:05 UTC; dongy
+Packaged: 2025-07-24 03:29:01 UTC; dongy
 Config/testthat/edition: 3

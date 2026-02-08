@@ -95,7 +95,7 @@ summarize_simulated_metrics <- function(all_metrics, species_list, version_label
          title = paste("Species Presence Proportion by Richness Level (", version_label, ")", sep = "")) +
     theme_minimal()
 
-  #print(heatmap_plot)
+  print(heatmap_plot)
 
   return(list(
     stats_table = simulated_stats,
