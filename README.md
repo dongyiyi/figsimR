@@ -498,6 +498,13 @@ sim_sanction_10 <- simulate_figwasp_community(
   egg_success_prob_by_phase = best_params$egg_success_prob_by_phase,
   layer_preference     = best_params$layer_preference,
   use_layering         = TRUE,  # let's turn it on
+  # new feature: sink metrics
+  use_sink_strength = FALSE,
+  sink_w_gall          = 1.0,
+  sink_w_seed          = 1.5,
+  sink_linear_coef     = 1.0,
+  sink_min_prop        = 0.20,
+  sink_max_prop        = 0.95
   seed                 = 43
 )
 
