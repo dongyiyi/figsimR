@@ -1,16 +1,13 @@
 # figsimR
 
-
-
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml/badge.svg)](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml)
 <!-- badges: end -->
 
-
-
-figsimR is a mechanistic, agent-based simulation package in R that turns process-based hypotheses into executable, testable models of community assembly
+figsimR is a mechanistic, agent-based simulation package in R that turns process-based hypotheses into executable, testable models of community assembly.
 
 # figsimR: Installation
+
 ```
 # 1) GitHub (recommended)
 # install.packages("remotes")     # if needed
