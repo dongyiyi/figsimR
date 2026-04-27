@@ -1,8 +1,9 @@
 # figsimR
 
 
+
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml/badge.svg?branch=main)](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml)
+[![R-CMD-check](https://img.shields.io/github/actions/workflow/status/dongyiyi/figsimR/R-CMD-check.yml?branch=main&event=push&label=R-CMD-check)](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml)
 <!-- badges: end -->
 
 
