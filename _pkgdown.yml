@@ -1,0 +1,91 @@
+url: https://dongyiyi.github.io/figsimR/
+
+template:
+  bootstrap: 5
+
+toc:
+  depth: 3
+
+navbar:
+  structure:
+    left: [intro, reference, articles]
+    right: [github]
+  components:
+    articles:
+      text: Tutorials
+      menu:
+      - text: Complete manual
+        href: articles/figsimR-manual.html
+      - text: Basic simulation workflow
+        href: articles/simulation-workflow.html
+      - text: Parameter guide
+        href: articles/parameter-guide.html
+      - text: figsimR showcase
+        href: articles/figsimR-showcase.html
+      - text: Alternative fig retention rules
+        href: articles/alternative-fig-retention-rules.html
+      - text: Mechanism knockouts
+        href: articles/knockouts.html
+      - text: Applying to other Ficus systems
+        href: articles/other-ficus-systems.html
+
+articles:
+- title: Manual
+  contents:
+  - figsimR-manual
+
+- title: Tutorials
+  contents:
+  - simulation-workflow
+  - parameter-guide
+  - figsimR-showcase
+  - alternative-fig-retention-rules
+  - knockouts
+  - other-ficus-systems
+
+reference:
+- title: Core simulation
+  contents:
+  - simulate_figwasp_community
+- title: Built-in data
+  contents:
+  - observed_data
+  - parameter_list_default
+  - species_list  
+- title: Metrics and diagnostics
+  contents:
+  - contains("metric")
+  - contains("diagnostic")
+- title: Primary and emergent metrics
+  contents:
+  - calc_richness_per_fig
+  - calc_per_fig_richness_evenness
+  - calc_bray_distribution
+  - calc_dispersion_distribution
+  - calc_primary_metrics
+  - calc_secondary_metrics
+  - collect_simulated_secondary_distributions
+  - compute_alpha_diversity
+  - compute_rho_matched_fast
+  - dispersion_test
+- title: Parameter optimization and resampling
+  contents:
+  - convert_parameter_list_to_param_ranges
+  - rebuild_parameter_list_from_row
+  - explore_parameter_space_lhs
+  - resample_simulated_metrics
+  - resample_observed_all_metrics
+  
+- title: Other functions
+  contents:
+  - boot_quantile
+  - envelope_for_model
+  - mean_exceed_norm
+  - predictive_envelope_full
+  - run_all_pairwise_tests_tidyverse
+  - run_fim_reduced_experiment
+  - run_kruskal_dunn
+  - run_sim_and_bootstrap_multiple_weights
+  - safe_cor
+  - safe_mean
+  - scale_safe

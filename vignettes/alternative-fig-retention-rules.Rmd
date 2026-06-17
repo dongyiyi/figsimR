@@ -1,0 +1,128 @@
+---
+title: "Alternative fig-retention rules"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Alternative fig-retention rules}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+# alternative fig-retention rules: host-sanction and sink strength
+
+## Host-sanction threshold (extreme setting).
+Here we illustrate an extreme host-sanction setting. We set the host-sanction threshold to 10% of a fig’s total flowers. If the number of ovules occupied by eggs of ovule-occupying guilds (pollinators + gallers) exceeds 10% of the fig’s flower count, the fig drops. When a fig drops, no fig wasps emerge. This example is for demonstration only; in practice, the threshold should be calibrated to empirical biology.
+
+The recent nutrient sink strength hypothesis for fig abortion was also adopted in the simulation (Segar et al. 2025), and can be activated (use_sink_strength = TRUE). We quantified sink strength for each galler species, including pollinator and non-pollinator galler, because only galler species directly utilize flowers and other parasitoid wasps do not use flowers. To simplify the model, we assume that sink strength is the same for pollinating and non-pollinating gallers, and that the relationship between the number of galler wasps and sink strength is linear (sink_linear_coef, default = 1; this relationship is unlikely to be strictly linear in reality and can be adjusted as needed). For comparison, the sink strength contributions of gallers and seeds were weighted by two parameters to calculate total sink strength within a fig. The default weights for galler sink strength (sink_w_gall) and seed sink strength (sink_w_seed) are set to 1 and 1.5, respectively, following observation reported previously (Wang et al. 2014, Wang et al. 2020b). Then, when fig-level sink strength exceeds the allowable range (reflecting of nutrient and energy allocation in a fig), from sink_min_prop (default = 0.2) to sink_max_prop (default = 0.95), the fig is marked as aborted.
+Notes: (i) Parasitoid eggs are not counted toward the ovule-occupation total because they do not occupy ovules directly. (ii) If your function still uses the legacy argument name host_sanction, use it; otherwise use the corrected host_sanction_threshold. (iii) A new sink theory was incorporated into figsimR_0.2.0.tar.gz, more details: Simon T Segar, Sotiria Boutsi, Daniel Souto-Vilarós, Martin Volf, Derek W Dunn, Astrid Cruaud, Rodrigo A S Pereira, Jean-Yves Rasplus, Finn Kjellberg, The diversity of Ficus, Annals of Botany, 2025;, mcaf280, https://doi.org/10.1093/aob/mcaf280
+
+## load package and dataset
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+
+library(figsimR)
+
+data(parameter_list_default)
+data(species_list)
+
+```
+
+### host-sanction
+```{r strict_host_sanction_threshold, fig.alt="Diagnostic plots summarizing the strict host-sanction simulation, including fig-drop outcomes and simulated fig-wasp community summaries."}
+# First, ensure the sanction mechanism *enable_sanctions <- TRUE *
+# Run the simulation with this specific sanction rule
+# Key change: set a strict host-sanction threshold at 10% of total flowers
+# If ovule-occupying eggs (pollinators + gallers) > 10% of flowers -> fig drops -> zero emergence.
+# We mark figs as dropped but keep eggs/emergence for inspection (drop_cancels_emergence = FALSE).
+# For analysis, we create a masked copy where dropped figs' emergence counts are zeroed.
+
+# LHS over thousands of samples × 1000‑fig simulations is expensive. In the vignette we either (A) load a precomputed result, or (B) run a tiny demo search. For full runs, set `RUN_HEAVY <- TRUE` and increase `n_samples`, `n_draws`, `sample_n`, and `num_figs`.
+
+RUN_HEAVY <- FALSE
+
+sim_sanction_10 <- simulate_figwasp_community(
+  num_figs = if (RUN_HEAVY) 1000 else 100,
+  fecundity_mean       = parameter_list_default$fecundity_mean,
+  fecundity_dispersion = parameter_list_default$fecundity_dispersion,
+  entry_mu             = parameter_list_default$entry_mu,
+  entry_size           = parameter_list_default$entry_size,
+  entry_priority       = parameter_list_default$entry_priority,
+  species_roles        = parameter_list_default$species_roles,
+  max_entry_table      = parameter_list_default$max_entry_table,
+  enable_drop          = TRUE,
+  drop_cancels_emergence = FALSE, # keep it as FALSE: it means "drop => zero emergence"
+  entry_distribution   = "lognormal",
+  interaction_matrix   = parameter_list_default$interaction_matrix,
+  interaction_weight   = 0,
+  host_sanction = 0.1, # the key change, default = 0.8
+  egg_success_prob     = parameter_list_default$egg_success_prob,
+  egg_success_prob_by_phase = parameter_list_default$egg_success_prob_by_phase,
+  layer_preference     = parameter_list_default$layer_preference,
+  use_layering         = TRUE,  # let's turn it on
+  # new feature: sink metrics
+  use_sink_strength = FALSE, # disable sink strength
+  sink_w_gall          = 1.0,
+  sink_w_seed          = 1.5,
+  sink_linear_coef     = 1.0,
+  sink_min_prop        = 0.20,
+  sink_max_prop        = 0.95,
+  seed                 = 43
+)
+
+sim_sanction_10 <- sim_sanction_10$summary
+
+# Quick check: how many figs dropped, and confirm dropped figs have zero emergence
+summarize_simulated_metrics(sim_sanction_10, species_list, version_label = "sanction 10%")$drop_summary 
+
+```
+
+### nutrient sink strength hypothesis
+In the output, the columns "is_dropped" and "drop_prob" are not meaningful. How to know if figs will be dropped? The columns "sink_below_min" and "sink_above_max" are logical: TRUE = drop; FALSE = no drop.
+
+```{r sink_strength}
+
+sim_sink_strength <- simulate_figwasp_community(
+  num_figs = if (RUN_HEAVY) 1000 else 100,
+  fecundity_mean       = parameter_list_default$fecundity_mean,
+  fecundity_dispersion = parameter_list_default$fecundity_dispersion,
+  entry_mu             = parameter_list_default$entry_mu,
+  entry_size           = parameter_list_default$entry_size,
+  entry_priority       = parameter_list_default$entry_priority,
+  species_roles        = parameter_list_default$species_roles,
+  max_entry_table      = parameter_list_default$max_entry_table,
+  enable_drop          = FALSE,
+  drop_cancels_emergence = FALSE, # keep it as FALSE: it means "drop => zero emergence"
+  entry_distribution   = "lognormal",
+  interaction_matrix   = parameter_list_default$interaction_matrix,
+  interaction_weight   = 0,
+  host_sanction = 0.1, # When enable_drop = FALSE, this sanction is disabled.
+  egg_success_prob     = parameter_list_default$egg_success_prob,
+  egg_success_prob_by_phase = parameter_list_default$egg_success_prob_by_phase,
+  layer_preference     = parameter_list_default$layer_preference,
+  use_layering         = TRUE,  # let's turn it on
+  # new feature: sink metrics
+  use_sink_strength = TRUE, # enable sink strength
+  sink_w_gall          = 1.0,
+  sink_w_seed          = 1.5,
+  sink_linear_coef     = 1.0,
+  sink_min_prop        = 0.20,
+  sink_max_prop        = 0.95,
+  seed                 = 43
+)
+
+
+sim_sink_strength_comm <- sim_sink_strength$summary
+head(sim_sink_strength_comm)
+
+# how many figs are not marked?
+
+sim_sink_strength_comm <- sim_sink_strength_comm[!(sim_sink_strength_comm$sink_below_min | sim_sink_strength_comm$sink_above_max), ]
+
+
+```
+

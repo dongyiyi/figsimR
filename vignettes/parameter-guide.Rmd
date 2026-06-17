@@ -1,0 +1,312 @@
+---
+title: "Parameter guide"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Parameter guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Overview
+
+This guide explains the major biological and statistical parameters used by `simulate_figwasp_community()`.
+
+```{r}
+
+library(figsimR)
+library(dplyr)
+library(forcats)
+library(ggplot2)
+library(scales)
+library(DiagrammeR)
+library(vegan)
+library(patchwork)
+library(purrr)
+library(stringr)
+library(tibble)
+library(readr)
+library(ggpubr)
+library(Hmsc)       # For Hierarchical Modelling of Species Communities (HMSC)
+library(future)      # for parallel backend
+library(progressr)   # to display progress bar during long computation
+library(tidyr)
+
+# Set custom font (Arial) for figure output
+# This section ensures consistent font rendering across figures
+# NOTE: This step may be platform-specific (Windows). Users on macOS/Linux may need to adjust font path or use a different font.
+library(extrafont)
+library(showtext)
+
+font_import(paths = "C:/Windows/Fonts", pattern = "arial", prompt = FALSE)  # import Arial font (Windows only)
+loadfonts(device = "win")
+
+
+font_add("Arial", regular = "C:/Windows/Fonts/arial.ttf")  # register Arial font for showtext
+showtext_auto()  # enable showtext for all plots
+
+
+###################### Data inputs & simulations ##################
+
+set.seed(42)
+
+data("observed_data")
+data("species_list")
+data("parameter_list_default")
+
+# Prepare parameter ranges for model resampling or optimization
+new_param_ranges <- parameter_list_default
+
+# Remove entries not relevant for optimization (e.g., fixed interaction matrix)
+new_param_ranges[c("interaction_matrix", "interaction_weight")] <- NULL
+
+# Convert the cleaned parameter list into a structured format suitable for optimization
+# This typically standardizes into a list of vectors/ranges for each parameter
+new_param_ranges <- convert_parameter_list_to_param_ranges(new_param_ranges)
+
+# Check the resulting structure of the parameter ranges
+str(new_param_ranges)
+
+obs_comm_mat <- observed_data
+
+# resample observed data and calculate metrics
+file_path <- system.file("extdata", "resample_observed_metrics_df_results.rds", package = "figsimR")
+
+if (file_path != "" && file.exists(file_path)) {
+  message("Loading precomputed resampled simulated result...")
+  resample_observed_metrics_df_results <- readRDS(file_path)
+} else {
+  message("Running resampling may take several minutes...")
+  resample_observed_metrics_df_results  <- resample_observed_all_metrics(
+  observed_df = observed_data,       # empirical data
+  seed = 42,                         # set seed for reproducibility
+  wasp_cols = species_list,          # columns corresponding to species counts
+  n_draws = 500,                     # number of bootstrap replicates
+  sample_n = 200,                    # number of figs sampled per replicate
+  calc_func = calc_all_metrics       # metric calculation function
+  )
+}
+
+head(resample_observed_metrics_df_results)
+
+# Summary statistics across all bootstrap replicates
+summary(resample_observed_metrics_df_results )
+
+# Optionally extract a cleaner subset of core diversity/network metrics LHS optimization
+observed_result_df_clean <- resample_observed_metrics_df_results[, 1:10]
+head(resample_observed_metrics_df_results)
+
+file_path <- system.file("extdata", "lhs_optimize_result.rds", package = "figsimR")
+
+# Load precomputed result if available; otherwise run the full optimization (may take ~1 hour)
+if (file_path != "" && file.exists(file_path)) {
+  message("Loading precomputed LHS optimization result...")
+  lhs_optimize_result <- readRDS(file_path)
+} else {
+  message("Running LHS optimization from scratch (this may take several hours; under testing: running 50 minetes with 62 cores)...")
+  lhs_optimize_result <- explore_parameter_space_lhs(
+    new_param_ranges = new_param_ranges,                  # parameter ranges to explore
+    observed_summary = observed_result_df_clean,          # summary statistics from observed data
+    num_figs = 1000,                                      # number of figs to simulate per run
+    n_draws = 500,                                        # bootstrap iterations for metric calculation
+    sample_n = 200,                                       # number of figs drawn per bootstrap sample
+    n_samples = 50000,                                    # total number of parameter combinations to test
+    wasp_cols = species_list,                             # columns to evaluate in diversity metrics
+    n_cores = 7,                                          # number of CPU cores to use in parallel
+    parameter_list_template = parameter_list_default      # base parameter list structure
+  )
+}
+# Extract the single best-performing parameter row (minimum loss)
+# Rebuild the full parameter list object from the best result row
+lhs_optimize_parameter <- rebuild_parameter_list_from_row(lhs_optimize_result[1, ],
+                                                          parameter_list_default)
+print(lhs_optimize_parameter)
+
+# simulate communities with the optimized parameters, keep consistency of the other parameters between explore_parameter_space_lhs() and simulate_figwasp_community()
+sim_df <- simulate_figwasp_community(
+  num_figs = 1000,
+
+  # default fig / resource settings used inside LHS unless otherwise specified
+  fig_diameter_mean = 2.5,
+  fig_diameter_sd = 1.2,
+  k = 300,
+  alpha = 1.3,
+  fig_diameter_min = 1.3,
+  fig_diameter_max = 4.0,
+  use_flower_limit = TRUE,
+
+  # optimized or template parameters
+  fecundity_mean = lhs_optimize_parameter$fecundity_mean,
+  fecundity_dispersion = lhs_optimize_parameter$fecundity_dispersion,
+  entry_mu = lhs_optimize_parameter$entry_mu,
+  entry_size = lhs_optimize_parameter$entry_size,
+  entry_priority = lhs_optimize_parameter$entry_priority,
+  max_entry_table = lhs_optimize_parameter$max_entry_table,
+  species_roles = lhs_optimize_parameter$species_roles,
+  interaction_matrix = lhs_optimize_parameter$interaction_matrix,
+  interaction_weight = lhs_optimize_parameter$interaction_weight,
+  egg_success_prob = lhs_optimize_parameter$egg_success_prob,
+  egg_success_prob_by_phase = lhs_optimize_parameter$egg_success_prob_by_phase,
+  layer_preference = lhs_optimize_parameter$layer_preference,
+
+  # important: match the LHS call
+  parasitism_prob = NULL,
+  enable_drop = TRUE,
+  use_supplemental_parasitism = FALSE,
+  drop_cancels_emergence = FALSE,
+  use_layering = TRUE,
+
+  # implicit defaults used by simulate_figwasp_community()
+  use_layer_preference = TRUE,
+  use_egg_success_by_phase = TRUE,
+  entry_distribution = "lognormal",
+  record_individual = FALSE,
+  use_sink_strength = FALSE,
+  p_pollination_per_ovule = 0.98,
+  p_no_entry = 0.002,
+  host_sanction = 0.8,
+
+  seed = 42
+)
+
+# check simulation results
+head(sim_df$summary)
+# extract communities
+sim_df_comm <- sim_df$summary
+sim_comm_mat <- sim_df_comm[,c(18:23)]
+
+# clean headers and reorder
+colnames(sim_comm_mat) <- gsub("^emergence_", "", colnames(sim_comm_mat))
+sim_comm_mat <- sim_comm_mat[, match(colnames(obs_comm_mat), colnames(sim_comm_mat))]
+head(obs_comm_mat)
+head(sim_comm_mat)
+stopifnot(identical(colnames(obs_comm_mat), colnames(sim_comm_mat)))
+
+```
+# key parameters
+For full parameter, please see the help document: ?simulate_figwasp_community()
+
+## alpha
+
+Exponent in the power-law relationship between fig diameter and flower number. Empirically estimated around 1.2-1.4 for many figs.
+
+
+## drop_cancels_emergence
+
+Logical. If FALSE, dropped figs produce zero emergence and seeds. If TRUE, their output remains.
+
+
+## egg_success_prob
+
+Global probability that a single oviposition attempt results in a successful egg. Applies when use_egg_success_by_phase = FALSE.
+
+## egg_success_prob_by_phase	
+
+Overrides global success probabilities by entry phase. A species-level list of phase-specific reproductive-success probabilities. For each species and developmental phase, the supplied value is used as the probability that an arriving or oviposition-attempting female contributes eggs during that phase. If no phase-specific value is supplied, the model uses the baseline egg_success_prob. Realized egg numbers are subsequently determined by fecundity, host availability, ovary-layer accessibility, and resource constraints. Format: species_name = list(phase1 = 0.5, phase2 = 0.7,...).
+
+## enable_drop
+
+Enables fig abortion due to host sanctions. If flower use proportion exceeds host_sanction, fig may abort. In the output “drop_prob” column: Ranges from 0 (never drop) to 1 (always drop); “is_dropped” column: no drop (0) and drop (1).
+
+## entry_distribution	
+
+Either “nb” (negative binomial) or “lognormal”. Defines how per-species entry numbers are simulated: “nb”: entries are drawn from NB( mu = entry_mu, size = entry_size ). “lognormal”: log(entry_mu) - 0.5 used as meanlog; sdlog = 1 / sqrt(entry_size); result used as Poisson rate.
+
+## entry_mu	
+
+Mean number of individuals of each species attempting to “enter” (arrival or oviposition-attempt events) each fig. Acts as expected value for entry distribution.
+
+## entry_priority	
+
+Defines the temporal entry order of species. Each element is a phase (e.g., phase1), with a vector of species names. Earlier phases enter first and may influence resource or host availability for later phases.
+
+## entry_size	
+
+Controls variation in entry distribution (the dispersion of the arrival or oviposition-attempt distribution): For entry_distribution = “nb”: used as NB size parameter. For “lognormal”: used to derive sdlog = 1 / sqrt(entry_size).
+
+## fecundity_dispersion	
+
+Dispersion parameter for fecundity (size in NB distribution). Controls variability in egg output across individuals.
+
+## fecundity_mean
+
+Mean number of eggs laid per female individual, per species. Used as mu in a negative binomial distribution.
+
+## fig_diameter_max	
+
+aximum fig diameter used to cap values (optional).
+
+## fig_diameter_mean
+
+Mean fig diameter (in cm). Used to generate per-fig flower number via the formula: flower_count = k, diameter^alpha, Gamma(shape = 20, scale = 0.1). Larger diameters yield more ovules.
+
+## fig_diameter_min	
+
+Truncate simulated diameters (and thus flower counts) to a biologically reasonable range.
+
+## fig_diameter_sd	
+
+Standard deviation of fig diameter. Each fig’s diameter is drawn from a normal distribution with this mean and SD.
+
+## host_sanction	
+
+Threshold parameter used in the optional host-sanction/fig-abortion module. Threshold of flower use (e.g., 0.8). If exceeded, the fig may abort (drop) due to excessive exploitation by wasps. When enable_drop = TRUE, fig drop probability is calculated as a logistic function of resource_ratio relative to this threshold. This parameter does not directly represent the probability of abortion, and it is retained as an optional alternative fig-retention rule.
+
+## k	
+
+Scaling constant for estimating flower number from fig diameter. Represents average number of flowers per cm^ alpha.
+
+## layer_preference
+
+For each species, a named numeric vector giving probabilities of oviposition in core, mid, and outer ovary layers. Sum must be 1. Or “none” is not given species-specific layer preferences; their oviposition attempts are allocated according to remaining ovary-layer availability. Used only if use_layering = TRUE.
+
+## species_list	
+		
+Character vector of species names (used to extract relevant columns).
+
+## species_roles
+
+Defines the ecological roles and interactions of all species. Contains three components: guild: character vector assigning each species to “pollinator”, “galler”, or “parasitoid”. hosts: list mapping parasitoids to their hosts. parasitoid: list mapping hosts to their attacking parasitoids. This structure defines trophic constraints (e.g., parasitoids cannot oviposit unless their hosts are present).
+
+## use_egg_success_by_phase	
+
+Use egg success probabilities by phase. Default TRUE.
+
+## use_flower_limit	
+
+If TRUE, clamps fig diameter between fig_diameter_min and fig_diameter_max before calculating flower number.
+
+## use_layer_preference
+
+If TRUE, species will preferentially oviposit in specific layers as defined in layer_preference.
+
+## use_layering	species
+
+If TRUE, fig flowers are divided into spatial layers (core, mid, outer).
+
+## use_supplemental_parasitism	
+
+Whether to activate supplemental parasitism. Default FALSE.
+
+## use_sink_strength
+
+If TRUE, compute sink-strength metrics but do NOT alter legacy drop decision. Adds columns: sink_strength, sink_prop, sink_below_min, sink_above_max. 
+
+## sink_w_gall	
+
+Per-ovule sink weight for galled ovules (default 1.0).
+
+## sink_w_seed	
+
+Per-ovule sink weight for seeds (default 1.5).
+
+## sink_linear_coef	
+
+Global multiplier on sink strength (default 1.0).
+
+## sink_min_prop	
+
+Reference lower bound of sink proportion (default 0.20).
+
+## sink_max_prop	
+
+Reference upper bound of sink proportion (default 0.95).

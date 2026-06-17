@@ -16,6 +16,8 @@ Description: Simulates the assembly and structure of fig wasp communities
     Retained *Ficus racemosa*-specific defaults for the worked example while allowing users
     to override them with system-specific parameters.
 License: MIT + file LICENSE
+URL: https://dongyiyi.github.io/figsimR/, https://github.com/dongyiyi/figsimR
+BugReports: https://github.com/dongyiyi/figsimR/issues
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.5)
