@@ -464,7 +464,7 @@ ggplot(knockout_results, aes(x = reorder(mechanism, total_loss), y = total_loss)
 
 ```
 
-# 6. Host Sanction Threshold
+# 6. alternative fig-retention rules: host-sanction and sink strength
 
 Example — Host-sanction threshold (extreme setting).
 Here we illustrate an extreme host-sanction setting. We set the host-sanction threshold to 10% of a fig’s total flowers. If the number of ovules occupied by eggs of ovule-occupying guilds (pollinators + gallers) exceeds 10% of the fig’s flower count, the fig drops. When a fig drops, no fig wasps emerge. This example is for demonstration only; in practice, the threshold should be calibrated to empirical biology.
