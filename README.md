@@ -519,7 +519,7 @@ summarize_simulated_metrics(sim_sanction_10, species_list, version_label = "sanc
 
 The bigger the loss jump when a module is removed, the more important that module is for reproducing community structure within the intrinsic envelope. We use ‘intrinsic envelope’ purely as a modeling term; it does not imply other processes are stochastic by nature—only that they are not yet modeled here.
 
-# 7. simulation for other system with two cases
+# 7. Two cases: simulation for other "fig" systems
 To demonstrate this flexibility, here, we tested the package using two additional user-defined examples: a minimal two-species community and a ten-species community that includes multiple pollinating fig wasp species. In both cases, the species names and interaction structures were user-defined. These examples show that figsimR can accommodate both simplified and more complex fig-fig wasp communities. 
 
 ```{r simulations}
