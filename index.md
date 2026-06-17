@@ -1,0 +1,74 @@
+# figsimR
+
+figsimR is a mechanistic, agent-based simulation package in R that turns
+process-based hypotheses into executable, testable models of fig wasp
+community assembly. The latest version, figsimR_0.2.1, has been
+released.
+
+# What can figsimR do?
+
+1.  Simulate fig wasp community assembly at the individual-fig level
+2.  Define custom species roles, guilds, and host–parasitoid links
+3.  Control entry or oviposition-attempt schedules
+4.  Model ovary-layer preference and resource limitation
+5.  Compare observed and simulated communities
+6.  Run mechanism knockout analyses (enable/disable mechanism)
+7.  Adapt the framework to other Ficus–fig wasp systems
+
+# figsimR: Installation
+
+    # 1) GitHub (recommended)
+    # install.packages("remotes")     # if needed
+    remotes::install_github("dongyiyi/figsimR")
+    library(figsimR)
+
+    # (optional) build vignettes
+    # remotes::install_github("dongyiyi/figsimR", build_vignettes = TRUE)
+    # requires: rmarkdown, knitr, pandoc
+
+    # 2) Using pak (fast dependency solver)
+    # install.packages("pak")
+    pak::pak("dongyiyi/figsimR")
+    library(figsimR)
+
+    # 3) From a local tarball (offline)
+    # replace with your actual file path:
+    install.packages("path/to/figsimR_0.2.1.tar.gz", repos = NULL, type = "source")
+    library(figsimR)
+
+    # 4) From a local source directory (after git clone)
+    # git clone https://github.com/dongyiyi/figsimR.git
+    # then in R (point to the folder or tar.gz):
+    # install.packages("devtools")    # if needed
+    devtools::install_local("path/to/figsimR", upgrade = "never")
+    # or: devtools::install_local("path/to/figsimR_0.2.1.tar.gz")
+
+# figsimR: Quick start
+
+    # set seed
+    set.seed(123)
+
+    # loading packages
+    library(figsimR)
+
+    data(parameter_list_default)
+    data(species_list)
+
+    sim <- simulate_figwasp_community(
+      num_figs = 100,
+      fecundity_mean = parameter_list_default$fecundity_mean,
+      fecundity_dispersion = parameter_list_default$fecundity_dispersion,
+      entry_mu = parameter_list_default$entry_mu,
+      entry_size = parameter_list_default$entry_size,
+      entry_priority = parameter_list_default$entry_priority,
+      species_roles = parameter_list_default$species_roles,
+      max_entry_table = parameter_list_default$max_entry_table,
+      egg_success_prob = parameter_list_default$egg_success_prob,
+      egg_success_prob_by_phase = parameter_list_default$egg_success_prob_by_phase,
+      layer_preference = parameter_list_default$layer_preference
+    )
+
+    head(sim$summary)
+
+See the full manual and tutorials at:
+<https://dongyiyi.github.io/figsimR/>

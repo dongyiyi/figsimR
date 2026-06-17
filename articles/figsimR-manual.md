@@ -1,0 +1,40 @@
+# figsimR complete manual
+
+## Overview
+
+`figsimR` is a modular, mechanism-explicit simulation framework for fig
+wasp communities.
+
+## Conceptual workflow
+
+The package follows four steps:
+
+1.  Prepare biological parameters
+2.  Simulate fig-level communities
+3.  Calculate diagnostic metrics
+4.  Compare baseline and mechanism-altered simulations
+
+## Main model components
+
+1.  Species roles and trophic links
+2.  Entry or oviposition-attempt dynamics
+3.  Fecundity and reproductive success
+4.  Ovary-layer preference
+5.  Host–parasitoid relationships
+6.  Fig-retention modules
+
+## Where to go next
+
+- For a minimal simulation example, see `simulation-workflow`.
+- For parameter definitions, see `parameter-guide`.
+- For mechanism knockout analyses, see `knockouts`.
+- For adapting the package to other systems, see `other-ficus-systems`.
+
+## Recommended workflow for new users
+
+1.  Start with the default Ficus racemosa example.
+2.  Inspect the parameter list.
+3.  Run a small simulation.
+4.  Compare observed and simulated summaries.
+5.  Modify one mechanism at a time.
+6.  Build a custom parameter list for a new system.

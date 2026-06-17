@@ -2,5 +2,14 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
-  figsimR_showcase: figsimR_showcase.html
-last_built: 2026-06-17T14:17Z
+  alternative-fig-retention-rules: alternative-fig-retention-rules.html
+  figsimR-manual: figsimR-manual.html
+  figsimR-showcase: figsimR-showcase.html
+  knockouts: knockouts.html
+  other-ficus-systems: other-ficus-systems.html
+  parameter-guide: parameter-guide.html
+  simulation-workflow: simulation-workflow.html
+last_built: 2026-06-17T19:20Z
+urls:
+  reference: https://dongyiyi.github.io/figsimR/reference
+  article: https://dongyiyi.github.io/figsimR/articles
