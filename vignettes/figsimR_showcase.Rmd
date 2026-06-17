@@ -1,5 +1,5 @@
 ---
-title: "Using figsimR: Diagnosing the Variation Gap and Dissecting Community Assembly"
+title: "figsimR: An R Package for Simulating Fig–wasp Community Dynamics"
 author: "Yiyi Dong"
 date: "`r Sys.Date()`"
 output:
@@ -7,7 +7,7 @@ output:
     toc: true
     toc_depth: 2
 vignette: >
-  %\VignetteIndexEntry{Using figsimR: Diagnosing the Variation Gap and Dissecting Community Assembly}
+  %\VignetteIndexEntry{figsimR: An R Package for Simulating Fig–wasp Community Dynamics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -162,7 +162,7 @@ sim_df <- sim_out$summary
 head(sim_df)
 ```
 
-# 4. Quantify the Variation Gap
+# 4. Quantify the model–data residual variance ("Variation Gap")
 
 We compare Observed vs Simulated by resampling simulated figs to the same sample size and computing identical metrics.
 
@@ -242,17 +242,70 @@ list(BCM_total_loss = bcm_loss$total_loss,
      KO_no_space_total_loss = ko_loss$total_loss)
 ```
 
-The bigger the loss jump when a module is removed, the more important that module is for reproducing community structure within the intrinsic envelope.
+# 6. Host Sanction Threshold and Sink Strength Theory
 
-# 6. Practical notes for users
+Example — Host-sanction threshold (extreme setting).
+Here we illustrate an extreme host-sanction setting. We set the host-sanction threshold to 10% of a fig’s total flowers. If the number of ovules occupied by eggs of ovule-occupying guilds (pollinators + gallers) exceeds 10% of the fig’s flower count, the fig drops. When a fig drops, no fig wasps emerge. This example is for demonstration only; in practice, the threshold should be calibrated to empirical biology.
 
-* **Speed vs. rigor.** The vignette runs with small `n_draws`, `sample_n`, and `n_samples`. For real analyses, increase these substantially.
+Notes: (i) Parasitoid eggs are not counted toward the ovule-occupation total because they do not occupy ovules directly. (ii) If your function still uses the legacy argument name host_sanction, use it; otherwise use the corrected host_sanction_threshold. (iii) A new sink theory was incorporated into figsimR_0.2.1.tar.gz. Compute sink-strength metrics but do NOT alter legacy drop decision: use_sink_strength = TRUE and enable_drop = FALSE and the columns "is_dropped" and "drop_prob" are not meaningful. The fig is dropped when the value of "sink_prop" falls outside the thresholds defined by sink_min_prop and sink_max_prop; The columns "sink_below_min" and "sink_above_max" are logical: TRUE = drop; FALSE = no drop. Adds columns: sink_strength, sink_prop, sink_below_min, sink_above_max. Sink strength threshold calculation: sink_strength = sink_linear_coef * (sink_w_gall * galled_total + sink_w_seed * seed_count). More details: Simon T Segar, Sotiria Boutsi, Daniel Souto-Vilarós, Martin Volf, Derek W Dunn, Astrid Cruaud, Rodrigo A S Pereira, Jean-Yves Rasplus, Finn Kjellberg, The diversity of Ficus, Annals of Botany, 2025;, mcaf280, https://doi.org/10.1093/aob/mcaf280
 
-* **Reproducibility.** Use `set.seed()` everywhere. If you enable parallelism, document RNG streams.
+```{r strict host-sanction threshold }
+# First, ensure the sanction mechanism *enable_sanctions <- TRUE *
+# Run the simulation with this specific sanction rule
+# Key change: set a strict host-sanction threshold at 10% of total flowers
+# If ovule-occupying eggs (pollinators + gallers) > 10% of flowers -> fig drops -> zero emergence.
+# We mark figs as dropped but keep eggs/emergence for inspection (drop_cancels_emergence = FALSE).
+# For analysis, we create a masked copy where dropped figs' emergence counts are zeroed.
 
-* **Progress bars.** `progressr::handlers()` may conflict with test runners—keep them off by default in vignettes.
+sim_sanction_10 <- simulate_figwasp_community(
+  num_figs = if (RUN_HEAVY) 1000 else 300,
+  fecundity_mean       = best_params$fecundity_mean,
+  fecundity_dispersion = best_params$fecundity_dispersion,
+  entry_mu             = best_params$entry_mu,
+  entry_size           = best_params$entry_size,
+  entry_priority       = best_params$entry_priority,
+  species_roles        = best_params$species_roles,
+  max_entry_table      = best_params$max_entry_table,
+  enable_drop          = TRUE,
+  drop_cancels_emergence = FALSE, # keep it as FALSE: it means "drop => zero emergence"
+  entry_distribution   = "lognormal",
+  interaction_matrix   = best_params$interaction_matrix,
+  interaction_weight   = 0,
+  host_sanction = 0.1, # the key change, default = 0.8
+  egg_success_prob     = best_params$egg_success_prob,
+  egg_success_prob_by_phase = best_params$egg_success_prob_by_phase,
+  layer_preference     = best_params$layer_preference,
+  use_layering         = TRUE,  # let's turn it on
+  # new feature: sink metrics
+  use_sink_strength = FALSE,
+  sink_w_gall          = 1.0,
+  sink_w_seed          = 1.5,
+  sink_linear_coef     = 1.0,
+  sink_min_prop        = 0.20,
+  sink_max_prop        = 0.95,
+  seed                 = 43
+)
 
-* **Precomputed objects.** For long workflows, ship `.rds` results in `inst/extdata/` and load them when available (as shown above).
+sim_sanction_10 <- sim_sanction_10$summary
+
+# Quick check: how many figs dropped, and confirm dropped figs have zero emergence
+summarize_simulated_metrics(sim_sanction_10, species_list, version_label = "sanction 10%")$drop_summary  
+
+summarize_simulated_metrics(sim_sanction_10, species_list, version_label = "sanction 10%")$stats_table
+
+```
+
+The bigger the loss jump when a module is removed, the more important that module is for reproducing community structure within the intrinsic envelope. We use ‘intrinsic envelope’ purely as a modeling term; it does not imply other processes are stochastic by nature—only that they are not yet modeled here.
+
+# 7. Practical notes for users
+
+* The vignette runs with small `n_draws`, `sample_n`, and `n_samples`. For real analyses, increase these substantially.
+
+* Use `set.seed()` everywhere. If you enable parallelism, document RNG streams.
+
+* `progressr::handlers()` may conflict with test runners—keep them off by default in vignettes.
+
+* For long workflows, ship `.rds` results in `inst/extdata/` and load them when available (as shown above).
 
 # 7. Session info
 

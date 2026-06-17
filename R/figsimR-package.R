@@ -18,5 +18,6 @@
 #' @importFrom stats as.formula
 #' @importFrom stats kruskal.test
 #' @importFrom stats wilcox.test
+#' @importFrom stats cor dist median quantile sd setNames var
 ## usethis namespace: end
 NULL

@@ -30,8 +30,6 @@
 #' under the Full Intrinsic Model (FIM) or other simulation variants, for comparison with observed data.
 #'
 #' @examples
-#' # Example (requires a working simulator and parameter inputs)
-#' # Assuming wasp_cols is defined and simulate_figwasp_community() is available
 #' \dontrun{
 #' sim_metrics <- resample_simulated_metrics(
 #'   n_draws = 100,
@@ -39,12 +37,19 @@
 #'   num_figs = 500,
 #'   simulator_func = simulate_figwasp_community,
 #'   calc_func = calc_all_metrics,
-#'   wasp_cols = c("Ceratosolen_sp", "Sycophaga_testacea", "Apocrypta_sp"),
+#'   wasp_cols = c("emergence_Ceratosolen_sp",
+#'                 "emergence_Sycophaga_testacea",
+#'                 "emergence_Apocrypta_sp"),
 #'   fecundity_mean = parameter_list_default$fecundity_mean,
+#'   fecundity_dispersion = parameter_list_default$fecundity_dispersion,
 #'   entry_mu = parameter_list_default$entry_mu,
 #'   entry_size = parameter_list_default$entry_size,
+#'   entry_priority = parameter_list_default$entry_priority,
 #'   species_roles = parameter_list_default$species_roles,
-#'   max_entry_table = parameter_list_default$max_entry_table
+#'   max_entry_table = parameter_list_default$max_entry_table,
+#'   egg_success_prob = parameter_list_default$egg_success_prob,
+#'   egg_success_prob_by_phase = parameter_list_default$egg_success_prob_by_phase,
+#'   layer_preference = parameter_list_default$layer_preference
 #' )
 #' head(sim_metrics)
 #' }
@@ -65,25 +70,64 @@ resample_simulated_metrics <- function(
   if (!is.function(calc_func)) stop("calc_func must be a function.")
 
   metrics_list <- vector("list", n_draws)
+  skipped <- 0L
 
-  for (i in 1:n_draws) {
+  pb <- utils::txtProgressBar(
+    min = 0,
+    max = n_draws,
+    style = 3
+  )
+  on.exit(close(pb), add = TRUE)
 
-    sim_result <- simulator_func(num_figs = num_figs, ...)
+  for (i in seq_len(n_draws)) {
+
+    sim_result <- simulator_func(
+      num_figs = num_figs,
+      ...
+    )
+
     df <- sim_result$summary
-    df_valid <- df[df$is_dropped == 0, ]
 
+    if (!"is_dropped" %in% names(df)) {
+      stop("The simulator output must contain an 'is_dropped' column.")
+    }
 
-    if (nrow(df_valid) < sample_n) next
+    missing_wasp_cols <- setdiff(wasp_cols, names(df))
+    if (length(missing_wasp_cols) > 0) {
+      stop(
+        "The following wasp_cols are missing from simulator output: ",
+        paste(missing_wasp_cols, collapse = ", ")
+      )
+    }
 
+    df_valid <- df[df$is_dropped == 0, , drop = FALSE]
 
-    sampled_df <- df_valid[sample(nrow(df_valid), sample_n), wasp_cols, drop = FALSE]
+    if (nrow(df_valid) < sample_n) {
+      skipped <- skipped + 1L
+      utils::setTxtProgressBar(pb, i)
+      next
+    }
 
+    sampled_df <- df_valid[
+      sample(seq_len(nrow(df_valid)), sample_n),
+      wasp_cols,
+      drop = FALSE
+    ]
 
     metrics_list[[i]] <- calc_func(sampled_df)
-  }
 
+    utils::setTxtProgressBar(pb, i)
+  }
 
   result_df <- dplyr::bind_rows(metrics_list)
   result_df$source <- "Simulated"
-  return(result_df)
+
+  if (skipped > 0) {
+    message(
+      "\nSkipped ", skipped, " replicate(s) because fewer than ",
+      sample_n, " non-dropped figs were available."
+    )
+  }
+
+  result_df
 }

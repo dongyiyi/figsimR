@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulate_figwasp_community.R
 \name{simulate_figwasp_community}
 \alias{simulate_figwasp_community}
-\title{Simulate Fig Wasp Community Assembly (Observed on Ficus racemosa)}
+\title{Simulate Fig Wasp Community Assembly (Observed on \emph{Ficus racemosa})}
 \usage{
 simulate_figwasp_community(
   num_figs = 1000,
@@ -47,27 +47,44 @@ simulate_figwasp_community(
 )
 }
 \arguments{
-\item{num_figs}{Integer. Number of fig fruits to simulate. Each fig will be treated as a discrete community.}
+\item{num_figs}{Integer. Number of fig fruits to simulate (i.e., number of independent communities, default = 1000). Each fig will be treated as a discrete community.}
 
-\item{fig_diameter_mean}{Numeric. Mean fig diameter (in cm).}
+\item{fig_diameter_mean}{Numeric. Mean fig diameter (in cm, default = 2.5). It is used to determine ovule number. Affects resource availability.}
 
-\item{fig_diameter_sd}{Numeric. SD of fig diameter.}
+\item{fig_diameter_sd}{Numeric. Standard deviation of fig diameter under the normal distribution used to generate fig diameters, default = 1.2).}
 
-\item{k}{Numeric. Scaling constant for estimating flower number from fig diameter.}
+\item{k}{Numeric. Scaling constant for estimating flower number from fig diameter (default = 300). Controls ovule-based competition.}
 
-\item{alpha}{Numeric. Exponent in the diameter–flower power-law.}
+\item{alpha}{Numeric. Exponent in the diameter–flower power-law used to estimate flower number from fig diameter; controls shape of seed-yield curve (default = 1.3).}
 
-\item{max_entry_table}{Named numeric vector. Per-species entry caps (scaled by fig size).}
+\item{max_entry_table}{Named numeric vector giving the baseline maximum number of
+arrivals or oviposition-attempting wasps per species. Names must match
+\code{species_roles$guild}. If \code{NULL}, the function uses the default
+\emph{Ficus racemosa} values when the supplied species set matches the worked
+example; otherwise, a generic value is assigned to all species, with a warning recommending system-specific values.}
 
-\item{fecundity_mean, }{fecundity_dispersion Named numeric vectors for NB fecundity.}
+\item{fecundity_mean}{The mean potential number of eggs per individual wasp.}
 
-\item{entry_mu, }{entry_size Named numeric vectors controlling entry distribution.}
+\item{fecundity_dispersion}{Named numeric vectors for fecundity distribution. The dispersion parameter for the negative binomial distribution modeling individual fecundity.}
+
+\item{entry_mu}{Named numeric vectors controlling the expected number of wasp arrival
+or oviposition-attempt events per fig. For pollinators, this corresponds to physical
+entry into the fig cavity; for non-pollinating fig wasps, it represents arrival at the
+fig and oviposition attempts from outside the fig wall. \code{entry_mu} should not be interpreted as physical
+entry into the fig cavity for all species.}
+
+\item{entry_size}{Named numeric vectors controlling entry distribution (the dispersion of the
+arrival or oviposition-attempt distribution). See \code{entry_distribution}.
+For \code{entry_distribution = "nb"}: used as NB size parameter. For \code{lognormal}: used to derive \code{sdlog = 1 / sqrt(entry_size)}.
+In the negative binomial option, this corresponds to the "size" parameter; smaller values produce stronger aggregation and greater among-fig variation.
+In the lognormal option, it controls the log-scale variance of the arrival process.
+This parameter is not a sample size and does not represent the number of eggs.}
 
 \item{entry_priority}{Named list of phases and species.}
 
 \item{species_roles}{List with $guild, $hosts, $parasitoid.}
 
-\item{entry_distribution}{"nb" or "lognormal".}
+\item{entry_distribution}{"nb" or "lognormal". See \code{entry_size}.}
 
 \item{interaction_matrix}{Optional numeric matrix (pairwise interactions).}
 
@@ -75,39 +92,61 @@ simulate_figwasp_community(
 
 \item{seed}{RNG seed (optional).}
 
-\item{egg_success_prob}{Global oviposition success (if not using phase-specific).}
+\item{egg_success_prob}{Global probability that a single oviposition attempt results in a successful egg. Applies when \code{use_egg_success_by_phase = FALSE}.}
 
-\item{egg_success_prob_by_phase}{List of per-phase success probs by species.}
+\item{egg_success_prob_by_phase}{Named list of species-specific, phase-specific
+egg-success probabilities. Each element is a named numeric vector whose names
+correspond to phases in \code{entry_priority}. When
+\code{use_egg_success_by_phase = TRUE}, a matching species-phase value
+overrides the baseline value in \code{egg_success_prob}. If no phase-specific
+value is provided, the baseline \code{egg_success_prob} is used; if that is
+also missing, the default success probability is 1.}
 
 \item{parasitism_prob}{Named numeric vector for supplemental parasitism.}
 
-\item{layer_preference}{Named list of layer probabilities per species.}
+\item{layer_preference}{Named list specifying species-specific ovary-layer preference or accessibility. Each species can be assigned either a numeric
+vector giving relative probabilities for \code{core}, \code{mid}, or \code{outer} ovary
+layers; Or \code{none} to indicate no species-specific ovary-layer preference.
+If \code{NULL}, figsimR uses the default \emph{Ficus racemosa}-specific
+layer preference when the supplied species set matches the worked example;
+otherwise, species are assigned \code{none} and users are encouraged to provide system-specific values.}
 
-\item{p_pollination_per_ovule}{Numeric [0–1]. Background pollination to seeds.}
+\item{p_pollination_per_ovule}{Numeric [0–1]. Probability that each unoccupied ovule becomes a seed.}
 
 \item{p_no_entry}{Numeric [0–1]. Probability a fig receives no entries.}
 
 \item{host_sanction}{Numeric [0–1]. Legacy overuse threshold for drop logic.}
 
-\item{fig_diameter_min, }{fig_diameter_max Numeric. Truncation bounds (if used).}
+\item{fig_diameter_min}{Numeric. Minimum fig diameter used to cap values (optional). Truncation bounds (if used). Truncate simulated diameters (and thus flower counts) to a biologically reasonable range.}
 
-\item{record_individual}{Logical. If TRUE, per-individual oviposition recorded.}
+\item{fig_diameter_max}{Numeric. Maximum fig diameter used to cap values (optional). Truncation bounds (if used). Truncate simulated diameters (and thus flower counts) to a biologically reasonable range.}
 
-\item{use_layering, use_layer_preference}{Logical switches for layering.}
+\item{record_individual}{Logical. If \code{TRUE}, per-individual oviposition recorded.}
 
-\item{enable_drop}{Logical. Enable legacy drop (host_sanction) mechanism.}
+\item{use_layering}{Logical switches for layering. If \code{TRUE}, fig flowers are divided into spatial layers (core, mid, outer).}
 
-\item{drop_cancels_emergence}{Logical. If FALSE, dropped figs yield zero output.}
+\item{use_layer_preference}{Logical. If \code{TRUE}, apply species-specific
+ovary-layer preference or accessibility values supplied through
+\code{layer_preference}. If \code{FALSE}, ovary-layer resources are still used when
+\code{use_layering = TRUE}, but no species-specific layer preference is applied.}
 
-\item{use_supplemental_parasitism}{Logical.}
+\item{enable_drop}{Logical. Enable legacy drop (host sanction) mechanism. If flower use proportion exceeds host_sanction, fig may abort.
+In the output "drop_prob" column: Ranges from 0 (never drop) to 1 (always drop); "is_dropped" column: no drop (0) and drop (1).
+When sink strength is used (\code{use_sink_strength = TRUE}) and \code{enable_drop = FALSE} (host sanction is disabled); the columns "is_dropped" and "drop_prob" in the outputs are not meaningful.}
 
-\item{use_flower_limit}{Logical.}
+\item{drop_cancels_emergence}{Logical. If \code{FALSE} (figs are dropped and no wasps emerge), dropped figs yield zero output (no wasps emerge at the end of phase).}
 
-\item{use_egg_success_by_phase}{Logical.}
+\item{use_supplemental_parasitism}{Logical. Whether to activate supplemental parasitism. Default FALSE.}
 
-\item{use_sink_strength}{Logical. If TRUE, compute sink-strength metrics but
-do NOT alter legacy drop decision. Adds columns: sink_strength, sink_prop,
-sink_below_min, sink_above_max.}
+\item{use_flower_limit}{Logical. If TRUE, clamps fig diameter between \code{fig_diameter_min} and \code{fig_diameter_max} before calculating flower number.}
+
+\item{use_egg_success_by_phase}{Logical. Use egg success probabilities by phase. Default TRUE.}
+
+\item{use_sink_strength}{Logical. If \code{TRUE}, compute sink-strength metrics but
+do NOT alter legacy drop decision: \code{use_sink_strength = TRUE} and \code{enable_drop = FALSE} and the columns "is_dropped" and "drop_prob" are not meaningful.
+The fig is dropped when the value of "sink_prop" falls outside the thresholds defined by \code{sink_min_prop} and \code{sink_max_prop}; The columns "sink_below_min" and "sink_above_max" are logical: TRUE = drop; FALSE = no drop.
+Adds columns: \code{sink_strength}, \code{sink_prop},
+\code{sink_below_min}, \code{sink_above_max}. Sink strength threshold calculation: \code{sink_strength = sink_linear_coef * (sink_w_gall * galled_total + sink_w_seed * seed_count)}.}
 
 \item{sink_w_gall}{Numeric in [0, +). Per-ovule sink weight for galled ovules (default 1.0).}
 
@@ -120,7 +159,17 @@ sink_below_min, sink_above_max.}
 \item{sink_max_prop}{Numeric in [0,1]. Reference upper bound of sink proportion (default 0.95).}
 }
 \value{
-list(summary = data.frame(...), individual_eggs = list() if requested)
+A list containing:
+\itemize{
+  \item \code{summary}: a compact data frame containing fig-level variables,
+  total entry, egg, and emergence counts for each species, seed and ovule
+  outcomes, sink-strength metrics, drop status, and the entry matrix.
+  \item \code{original_summary}: the complete simulation output, including
+  layer-specific resource-use and egg-count columns and other diagnostic
+  variables.
+  \item \code{individual_eggs}: a list of per-individual egg counts, returned
+  only when \code{record_individual = TRUE}.
+}
 }
 \description{
 This function simulates fig wasp community structure within a set of fig fruits,
@@ -134,8 +183,8 @@ Each simulation models community assembly in a number of fig fruits, where:
   \item Wasp species arrive in \code{entry_priority} phases (priority effects).
   \item Pollinators and gallers lay eggs into limited ovules.
   \item Parasitoids require host presence and attack host eggs.
-  \item Layer preference can restrict oviposition to \code{core}, \code{mid}, or \code{outer} layers.
-  \item Figs may abort (drop) if flower usage exceeds \code{host_sanction}.
+  \item The ovary-layer preference filter can be bypassed with \code{"none"}; Or layer preference can restrict oviposition to \code{core}, \code{mid}, or \code{outer} layers.
+  \item Figs may abort (drop) if flower usage exceeds \code{host_sanction} or \code{sink_strength}.
 }
 
 Species roles, hosts, and parasitoid links must be defined in \code{species_roles}.
