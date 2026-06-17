@@ -57,6 +57,7 @@ Suggests:
 	DiagrammeR,
 	extrafont,
 	showtext,
+	ggpubr,
     rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
