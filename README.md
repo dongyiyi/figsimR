@@ -972,7 +972,7 @@ head(two_summary)
 
 * **Extensibility.** Treat the BCM vignette as a baseline. If a project requires environmental or spatial structure, add those modules and re-estimate the gap.
 
-# 8. Session info
+# 9. Session info
 
 ```{r session-info}
 sessionInfo()
