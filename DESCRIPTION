@@ -52,6 +52,11 @@ Suggests:
     stringr,
     testthat (>= 3.0.0),
     knitr,
+	forcats,
+	scales,
+	DiagrammeR,
+	extrafont,
+	showtext,
     rmarkdown
 VignetteBuilder: knitr
 NeedsCompilation: no
