@@ -37,14 +37,6 @@ library(tidyr)
 library(extrafont)
 library(showtext)
 
-font_import(paths = "C:/Windows/Fonts", pattern = "arial", prompt = FALSE)  # import Arial font (Windows only)
-loadfonts(device = "win")
-
-
-font_add("Arial", regular = "C:/Windows/Fonts/arial.ttf")  # register Arial font for showtext
-showtext_auto()  # enable showtext for all plots
-
-
 ###################### Data inputs & simulations ##################
 
 set.seed(42)
