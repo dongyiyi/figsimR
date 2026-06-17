@@ -2,6 +2,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://img.shields.io/github/actions/workflow/status/dongyiyi/figsimR/R-CMD-check.yml?branch=main&label=R-CMD-check)](https://github.com/dongyiyi/figsimR/actions/workflows/R-CMD-check.yml)
+[![pkgdown](https://github.com/dongyiyi/figsimR/actions/workflows/pkgdown.yaml/badge.svg)](https://github.com/dongyiyi/figsimR/actions/workflows/pkgdown.yaml)
 <!-- badges: end -->
 
 figsimR is a mechanistic, agent-based simulation package in R that turns process-based hypotheses into executable, testable models of fig wasp community assembly. The latest version, figsimR_0.2.1, has been released.
