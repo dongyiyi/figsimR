@@ -23,6 +23,7 @@ jobs:
           install.packages("remotes")
           remotes::install_deps(dependencies = TRUE)
           remotes::install_cran("pkgdown")
+          remotes::install_local(".", upgrade = "never")
         shell: Rscript {0}
 
       - name: Build site
