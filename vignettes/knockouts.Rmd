@@ -15,7 +15,7 @@ Run a set of reduced model configurations to test the necessity of specific intr
 Each entry modifies one key mechanism in the baseline configuration modeling (BCM) while keeping other parameters fixed.
 we need remove the figs labeled as "dropped" from the final dataset.
 
-```{r mechanism_knockouts}
+```{r mechanism_knockouts, eval=FALSE}
 
 library(figsimR)
 library(dplyr)
