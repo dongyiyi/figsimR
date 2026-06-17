@@ -519,7 +519,446 @@ summarize_simulated_metrics(sim_sanction_10, species_list, version_label = "sanc
 
 The bigger the loss jump when a module is removed, the more important that module is for reproducing community structure within the intrinsic envelope. We use ‘intrinsic envelope’ purely as a modeling term; it does not imply other processes are stochastic by nature—only that they are not yet modeled here.
 
-# 7. Practical notes for users
+# 7. simulation for other system with two cases
+To demonstrate this flexibility, here, we tested the package using two additional user-defined examples: a minimal two-species community and a ten-species community that includes multiple pollinating fig wasp species. In both cases, the species names and interaction structures were user-defined. These examples show that figsimR can accommodate both simplified and more complex fig-fig wasp communities. 
+
+```{r simulations}
+
+# ten-species community: multiple pollinating fig wasp species
+custom_species <- c(
+  "Pollinator_A",
+  "Pollinator_B",
+  "Galler_A",
+  "Galler_B",
+  "Galler_C",
+  "Parasitoid_A",
+  "Parasitoid_B",
+  "Parasitoid_C",
+  "Hyperparasitoid_A",
+  "Hyperparasitoid_B"
+)
+
+custom_roles <- list(
+  guild = c(
+    Pollinator_A      = "pollinator",
+    Pollinator_B      = "pollinator",
+    Galler_A          = "galler",
+    Galler_B          = "galler",
+    Galler_C          = "galler",
+    Parasitoid_A      = "parasitoid",
+    Parasitoid_B      = "parasitoid",
+    Parasitoid_C      = "parasitoid",
+    Hyperparasitoid_A = "parasitoid",
+    Hyperparasitoid_B = "parasitoid"
+  ),
+
+  hosts = list(
+    Pollinator_A      = character(0),
+    Pollinator_B      = character(0),
+    Galler_A          = character(0),
+    Galler_B          = character(0),
+    Galler_C          = character(0),
+    Parasitoid_A      = c("Galler_A"),
+    Parasitoid_B      = c("Galler_B", "Galler_C"),
+    Parasitoid_C      = c("Pollinator_A"),
+    Hyperparasitoid_A = c("Parasitoid_A"),
+    Hyperparasitoid_B = c("Parasitoid_B", "Parasitoid_C")
+  ),
+
+  parasitoid = list(
+    Pollinator_A      = c("Parasitoid_C"),
+    Pollinator_B      = character(0),
+    Galler_A          = c("Parasitoid_A"),
+    Galler_B          = c("Parasitoid_B"),
+    Galler_C          = c("Parasitoid_B"),
+    Parasitoid_A      = c("Hyperparasitoid_A"),
+    Parasitoid_B      = c("Hyperparasitoid_B"),
+    Parasitoid_C      = c("Hyperparasitoid_B"),
+    Hyperparasitoid_A = character(0),
+    Hyperparasitoid_B = character(0)
+  )
+)
+
+custom_parameter_list <- list(
+  entry_mu = c(
+    Pollinator_A      = 8,
+    Pollinator_B      = 4,
+    Galler_A          = 5,
+    Galler_B          = 4,
+    Galler_C          = 4,
+    Parasitoid_A      = 3,
+    Parasitoid_B      = 3,
+    Parasitoid_C      = 2,
+    Hyperparasitoid_A = 1.5,
+    Hyperparasitoid_B = 1.5
+  ),
+
+  entry_size = c(
+    Pollinator_A      = 6,
+    Pollinator_B      = 5,
+    Galler_A          = 5,
+    Galler_B          = 5,
+    Galler_C          = 5,
+    Parasitoid_A      = 4,
+    Parasitoid_B      = 4,
+    Parasitoid_C      = 4,
+    Hyperparasitoid_A = 3,
+    Hyperparasitoid_B = 3
+  ),
+
+  fecundity_mean = c(
+    Pollinator_A      = 80,
+    Pollinator_B      = 70,
+    Galler_A          = 25,
+    Galler_B          = 22,
+    Galler_C          = 20,
+    Parasitoid_A      = 8,
+    Parasitoid_B      = 8,
+    Parasitoid_C      = 7,
+    Hyperparasitoid_A = 5,
+    Hyperparasitoid_B = 5
+  ),
+
+  fecundity_dispersion = c(
+    Pollinator_A      = 1.2,
+    Pollinator_B      = 1.2,
+    Galler_A          = 1.5,
+    Galler_B          = 1.5,
+    Galler_C          = 1.5,
+    Parasitoid_A      = 2,
+    Parasitoid_B      = 2,
+    Parasitoid_C      = 2,
+    Hyperparasitoid_A = 2,
+    Hyperparasitoid_B = 2
+  ),
+
+  egg_success_prob = c(
+    Pollinator_A      = 0.9,
+    Pollinator_B      = 0.85,
+    Galler_A          = 0.75,
+    Galler_B          = 0.7,
+    Galler_C          = 0.7,
+    Parasitoid_A      = 0.6,
+    Parasitoid_B      = 0.6,
+    Parasitoid_C      = 0.55,
+    Hyperparasitoid_A = 0.5,
+    Hyperparasitoid_B = 0.5
+  ),
+
+  egg_success_prob_by_phase = list(
+    Pollinator_A      = c(phase2 = 0.9),
+    Pollinator_B      = c(phase2 = 0.8),
+    Galler_A          = c(phase1 = 0.7),
+    Galler_B          = c(phase1 = 0.7, phase2 = 0.6),
+    Galler_C          = c(phase2 = 0.7),
+    Parasitoid_A      = c(phase2 = 0.6),
+    Parasitoid_B      = c(phase2 = 0.6, phase3 = 0.6),
+    Parasitoid_C      = c(phase2 = 0.5),
+    Hyperparasitoid_A = c(phase3 = 0.5),
+    Hyperparasitoid_B = c(phase3 = 0.5)
+  ),
+
+  layer_preference = list(
+    Pollinator_A      = c(core = 0.7, mid = 0.2, outer = 0.1),
+    Pollinator_B      = c(core = 0.6, mid = 0.3, outer = 0.1),
+    Galler_A          = c(core = 0.5, mid = 0.3, outer = 0.2),
+    Galler_B          = c(core = 0.4, mid = 0.4, outer = 0.2),
+    Galler_C          = c(core = 0.3, mid = 0.4, outer = 0.3),
+    Parasitoid_A      = c(core = 0.2, mid = 0.4, outer = 0.4),
+    Parasitoid_B      = c(core = 0.2, mid = 0.3, outer = 0.5),
+    Parasitoid_C      = c(core = 0.3, mid = 0.3, outer = 0.4),
+    Hyperparasitoid_A = c(core = 0.1, mid = 0.3, outer = 0.6),
+    Hyperparasitoid_B = c(core = 0.1, mid = 0.3, outer = 0.6)
+  ),
+
+  max_entry_table = setNames(rep(20, length(custom_species)), custom_species),
+
+  parasitism_prob = c(
+    Parasitoid_A      = 0.85,
+    Parasitoid_B      = 0.80,
+    Parasitoid_C      = 0.75,
+    Hyperparasitoid_A = 0.60,
+    Hyperparasitoid_B = 0.60
+  ),
+
+  entry_priority = list(
+    phase1 = c("Galler_A", "Galler_B"),
+    phase2 = c(
+      "Pollinator_A",
+      "Pollinator_B",
+      "Galler_B",
+      "Galler_C",
+      "Parasitoid_A",
+      "Parasitoid_B",
+      "Parasitoid_C"
+    ),
+    phase3 = c(
+      "Parasitoid_B",
+      "Hyperparasitoid_A",
+      "Hyperparasitoid_B"
+    )
+  ),
+
+  interaction_matrix = matrix(
+    0,
+    nrow = length(custom_species),
+    ncol = length(custom_species),
+    dimnames = list(custom_species, custom_species)
+  ),
+
+  interaction_weight = 0,
+
+  species_roles = custom_roles
+)
+
+# function for parameter check
+validate_figsim_parameter_list <- function(parameter_list) {
+
+  required_components <- c(
+    "entry_mu",
+    "entry_size",
+    "fecundity_mean",
+    "fecundity_dispersion",
+    "egg_success_prob",
+    "egg_success_prob_by_phase",
+    "layer_preference",
+    "max_entry_table",
+    "parasitism_prob",
+    "entry_priority",
+    "interaction_matrix",
+    "interaction_weight",
+    "species_roles"
+  )
+
+  missing_components <- setdiff(required_components, names(parameter_list))
+  if (length(missing_components) > 0) {
+    stop(
+      "Missing required components: ",
+      paste(missing_components, collapse = ", ")
+    )
+  }
+
+  species_roles <- parameter_list$species_roles
+  species_names <- names(species_roles$guild)
+
+  if (length(species_names) == 0) {
+    stop("species_roles$guild must be a named vector.")
+  }
+
+  # Check species-indexed numeric vectors
+  species_vectors <- c(
+    "entry_mu",
+    "entry_size",
+    "fecundity_mean",
+    "fecundity_dispersion",
+    "egg_success_prob",
+    "max_entry_table"
+  )
+
+  for (v in species_vectors) {
+    missing_species <- setdiff(species_names, names(parameter_list[[v]]))
+    extra_species <- setdiff(names(parameter_list[[v]]), species_names)
+
+    if (length(missing_species) > 0) {
+      stop(v, " is missing species: ", paste(missing_species, collapse = ", "))
+    }
+
+    if (length(extra_species) > 0) {
+      warning(v, " contains extra species: ", paste(extra_species, collapse = ", "))
+    }
+  }
+
+  # Check hosts and parasitoid lists
+  if (!all(species_names %in% names(species_roles$hosts))) {
+    stop("species_roles$hosts must contain all species.")
+  }
+
+  if (!all(species_names %in% names(species_roles$parasitoid))) {
+    stop("species_roles$parasitoid must contain all species.")
+  }
+
+  all_hosts <- unique(unlist(species_roles$hosts))
+  all_parasitoids <- unique(unlist(species_roles$parasitoid))
+
+  invalid_hosts <- setdiff(all_hosts, species_names)
+  invalid_parasitoids <- setdiff(all_parasitoids, species_names)
+
+  if (length(invalid_hosts) > 0) {
+    stop("Unknown host species: ", paste(invalid_hosts, collapse = ", "))
+  }
+
+  if (length(invalid_parasitoids) > 0) {
+    stop("Unknown parasitoid species: ", paste(invalid_parasitoids, collapse = ", "))
+  }
+
+  # Check entry priority
+  entry_species <- unique(unlist(parameter_list$entry_priority))
+  missing_from_priority <- setdiff(species_names, entry_species)
+  invalid_priority_species <- setdiff(entry_species, species_names)
+
+  if (length(missing_from_priority) > 0) {
+    warning(
+      "These species are not included in entry_priority: ",
+      paste(missing_from_priority, collapse = ", ")
+    )
+  }
+
+  if (length(invalid_priority_species) > 0) {
+    stop(
+      "entry_priority contains unknown species: ",
+      paste(invalid_priority_species, collapse = ", ")
+    )
+  }
+
+  # Check interaction matrix
+  interaction_matrix <- parameter_list$interaction_matrix
+
+  if (!is.matrix(interaction_matrix)) {
+    stop("interaction_matrix must be a matrix.")
+  }
+
+  if (!all(species_names %in% rownames(interaction_matrix)) ||
+      !all(species_names %in% colnames(interaction_matrix))) {
+    stop("interaction_matrix rownames and colnames must include all species.")
+  }
+
+  # Check layer preference
+  if (!all(species_names %in% names(parameter_list$layer_preference))) {
+    stop("layer_preference must contain all species.")
+  }
+
+  # Check egg_success_prob_by_phase
+  if (!all(species_names %in% names(parameter_list$egg_success_prob_by_phase))) {
+    stop("egg_success_prob_by_phase must contain all species.")
+  }
+
+  message("Parameter list passed all checks.")
+  invisible(TRUE)
+}
+
+validate_figsim_parameter_list(custom_parameter_list)
+
+
+set.seed(123)
+
+custom_sim <- do.call(
+  simulate_figwasp_community,
+  c(
+    list(
+      num_figs = 50,
+      seed = 123,
+      use_layering = TRUE,
+      use_layer_preference = TRUE,
+      use_sink_strength = TRUE,
+      enable_drop = FALSE
+    ),
+    custom_parameter_list
+  )
+)
+
+custom_summary <- custom_sim$summary
+
+head(custom_summary)
+
+# two-species community 
+two_species <- c("Pollinator_A", "Galler_A")
+
+two_roles <- list(
+  guild = c(
+    Pollinator_A = "pollinator",
+    Galler_A     = "galler"
+  ),
+  hosts = list(
+    Pollinator_A = character(0),
+    Galler_A     = character(0)
+  ),
+  parasitoid = list(
+    Pollinator_A = character(0),
+    Galler_A     = character(0)
+  )
+)
+
+two_parameter_list <- list(
+  entry_mu = c(
+    Pollinator_A = 8,
+    Galler_A     = 5
+  ),
+
+  entry_size = c(
+    Pollinator_A = 6,
+    Galler_A     = 5
+  ),
+
+  fecundity_mean = c(
+    Pollinator_A = 80,
+    Galler_A     = 25
+  ),
+
+  fecundity_dispersion = c(
+    Pollinator_A = 1.2,
+    Galler_A     = 1.5
+  ),
+
+  egg_success_prob = c(
+    Pollinator_A = 0.9,
+    Galler_A     = 0.7
+  ),
+
+  egg_success_prob_by_phase = list(
+    Pollinator_A = c(phase2 = 0.9),
+    Galler_A     = c(phase1 = 0.7)
+  ),
+
+  layer_preference = list(
+    Pollinator_A = c(core = 0.7, mid = 0.2, outer = 0.1),
+    Galler_A     = c(core = 0.4, mid = 0.4, outer = 0.2)
+  ),
+
+  max_entry_table = c(
+    Pollinator_A = 20,
+    Galler_A     = 20
+  ),
+
+  parasitism_prob = c(),
+
+  entry_priority = list(
+    phase1 = c("Galler_A"),
+    phase2 = c("Pollinator_A")
+  ),
+
+  interaction_matrix = matrix(
+    0,
+    nrow = length(two_species),
+    ncol = length(two_species),
+    dimnames = list(two_species, two_species)
+  ),
+
+  interaction_weight = 0,
+
+  species_roles = two_roles
+)
+
+validate_figsim_parameter_list(two_parameter_list)
+
+two_sim <- do.call(
+  simulate_figwasp_community,
+  c(
+    list(
+      num_figs = 100,
+      seed = 123,
+      use_layering = TRUE,
+      use_layer_preference = TRUE,
+      enable_drop = TRUE
+    ),
+    two_parameter_list
+  )
+)
+
+two_summary <- two_sim$summary
+head(two_summary)
+```
+
+# 8. Practical notes for users
 
 * **Speed vs. rigor.** The vignette runs with small `n_draws`, `sample_n`, and `n_samples`. For real analyses, increase these substantially.
 
