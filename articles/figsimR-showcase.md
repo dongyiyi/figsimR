@@ -593,9 +593,9 @@ not yet modeled here.
 ``` r
 
 sessionInfo()
-#> R version 4.6.0 (2026-04-24)
+#> R version 4.6.1 (2026-06-24)
 #> Platform: x86_64-pc-linux-gnu
-#> Running under: Ubuntu 24.04.4 LTS
+#> Running under: Ubuntu 24.04.5 LTS
 #> 
 #> Matrix products: default
 #> BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -618,30 +618,30 @@ sessionInfo()
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] dotCall64_1.2         gtable_0.3.6          spam_2.11-4          
-#>  [4] xfun_0.58             bslib_0.11.0          ggplot2_4.0.3        
+#>  [4] xfun_0.60             bslib_0.12.0          ggplot2_4.0.3        
 #>  [7] htmlwidgets_1.6.4     lattice_0.22-9        vctrs_0.7.3          
-#> [10] tools_4.6.0           generics_0.1.4        parallel_4.6.0       
+#> [10] tools_4.6.1           generics_0.1.4        parallel_4.6.1       
 #> [13] tibble_3.3.1          FSA_0.10.1            cluster_2.1.8.2      
 #> [16] pkgconfig_2.0.3       Matrix_1.7-5          RColorBrewer_1.1-3   
 #> [19] lhs_1.3.0             S7_0.2.2              desc_1.4.3           
-#> [22] lifecycle_1.0.5       compiler_4.6.0        farver_2.1.2         
+#> [22] lifecycle_1.0.5       compiler_4.6.1        farver_2.1.2         
 #> [25] fields_17.3           textshaping_1.0.5     codetools_0.2-20     
 #> [28] permute_0.9-10        htmltools_0.5.9       maps_3.4.3           
 #> [31] sass_0.4.10           yaml_2.3.12           pillar_1.11.1        
-#> [34] pkgdown_2.2.0         jquerylib_0.1.4       tidyr_1.3.2          
+#> [34] pkgdown_2.2.1         jquerylib_0.1.4       tidyr_1.3.2          
 #> [37] MASS_7.3-65           cachem_1.1.0          bipartite_2.24       
-#> [40] vegan_2.7-5           nlme_3.1-169          parallelly_1.47.0    
+#> [40] vegan_2.7-6           nlme_3.1-169          parallelly_1.48.0    
 #> [43] network_1.20.0        tidyselect_1.2.1      digest_0.6.39        
-#> [46] future_1.70.0         dplyr_1.2.1           purrr_1.2.2          
-#> [49] listenv_0.10.1        labeling_0.4.3        splines_4.6.0        
-#> [52] fastmap_1.2.0         grid_4.6.0            cli_3.6.6            
-#> [55] magrittr_2.0.5        future.apply_1.20.2   withr_3.0.2          
-#> [58] scales_1.4.0          rmarkdown_2.31        globals_0.19.1       
-#> [61] igraph_2.3.2          otel_0.2.0            gridExtra_2.3        
-#> [64] progressr_0.19.0      ragg_1.5.2            sna_2.8              
-#> [67] coda_0.19-4.1         evaluate_1.0.5        knitr_1.51           
-#> [70] viridisLite_0.4.3     mgcv_1.9-4            rlang_1.2.0          
-#> [73] Rcpp_1.1.1-1.1        glue_1.8.1            jsonlite_2.0.0       
+#> [46] future_1.75.0         dplyr_1.2.1           purrr_1.2.2          
+#> [49] listenv_1.0.0         labeling_0.4.3        splines_4.6.1        
+#> [52] fastmap_1.2.0         grid_4.6.1            cli_3.6.6            
+#> [55] magrittr_2.0.5        future.apply_1.20.2   withr_3.0.3          
+#> [58] scales_1.4.0          rmarkdown_2.32        globals_0.19.1       
+#> [61] igraph_2.3.3          otel_0.2.0            gridExtra_2.3.1      
+#> [64] progressr_1.0.0       ragg_1.5.2            sna_2.8              
+#> [67] coda_0.19-4.1         evaluate_1.0.5        knitr_1.52           
+#> [70] viridisLite_0.4.3     mgcv_1.9-4            rlang_1.3.0          
+#> [73] Rcpp_1.1.2            glue_1.8.1            jsonlite_2.0.0       
 #> [76] R6_2.6.1              statnet.common_4.13.0 systemfonts_1.3.2    
 #> [79] fs_2.1.0
 ```
