@@ -78,3 +78,8 @@ head(sim$summary)
 ```
 See the full manual and tutorials at: [https://dongyiyi.github.io/figsimR/](https://dongyiyi.github.io/figsimR/)
 
+# Citation
+
+If you use `figsimR` in your research, please cite:
+> Dong, Y., S. T. Segar, and Q. Weng. 2026. “*figsimR: An R Package for Simulating Fig-Wasp Community Dynamics*.” *Ecology and Evolution* 16(7): e74018. https://doi.org/10.1002/ece3.74018
+
