@@ -1,8 +1,8 @@
 Package: figsimR
 Type: Package
-Title: Simulating Fig Wasp Community Assembly
+Title: An R Package for Simulating Fig-Wasp Community Dynamics
 Version: 0.2.1
-Author: Yiyi Dong
+Author: Yiyi Dong, Simon T. Segar, Qingbei Weng
 Maintainer: Yiyi Dong <dongyiyi09@hotmail.com>
 Description: Simulates the assembly and structure of fig wasp communities 
     within fig fruits (Ficus racemosa), capturing ecological processes such as 
