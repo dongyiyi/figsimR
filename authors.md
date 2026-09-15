@@ -7,16 +7,20 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/dongyiyi/figsimR/blob/main/DESCRIPTION)
+[`inst/CITATION`](https://github.com/dongyiyi/figsimR/blob/main/inst/CITATION)
 
-Dong Y, Segar ST, Weng Q (2026). *figsimR: An R Package for Simulating
-Fig-Wasp Community Dynamics*. R package version 0.2.1,
-<https://dongyiyi.github.io/figsimR/>.
+Dong Y, Segar ST, Weng Q (2026). "figsimR: An R Package for Simulating
+Fig-Wasp Community Dynamics." Ecology and Evolution 16(7): e74018.
+https://doi.org/10.1002/ece3.74018
 
-    @Manual{,
-      title = {figsimR: An R Package for Simulating Fig-Wasp Community Dynamics},
+    @Article{,
+      title = {{figsimR}: An R Package for Simulating Fig-Wasp Community Dynamics},
       author = {Yiyi Dong and Simon T. Segar and Qingbei Weng},
+      journal = {Ecology and Evolution},
       year = {2026},
-      note = {R package version 0.2.1},
-      url = {https://dongyiyi.github.io/figsimR/},
+      volume = {16},
+      number = {7},
+      pages = {e74018},
+      doi = {10.1002/ece3.74018},
+      url = {https://doi.org/10.1002/ece3.74018},
     }
