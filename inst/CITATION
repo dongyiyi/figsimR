@@ -1,0 +1,22 @@
+bibentry(
+  bibtype = "Article",
+  title = "{figsimR}: An R Package for Simulating Fig-Wasp Community Dynamics",
+  author = c(
+    person("Yiyi", "Dong"),
+    person("Simon T.", "Segar"),
+    person("Qingbei", "Weng")
+  ),
+  journal = "Ecology and Evolution",
+  year = "2026",
+  volume = "16",
+  number = "7",
+  pages = "e74018",
+  doi = "10.1002/ece3.74018",
+  url = "https://doi.org/10.1002/ece3.74018",
+  textVersion = paste(
+    "Dong Y, Segar ST, Weng Q (2026).",
+    "\"figsimR: An R Package for Simulating Fig-Wasp Community Dynamics.\"",
+    "Ecology and Evolution 16(7): e74018.",
+    "https://doi.org/10.1002/ece3.74018"
+  )
+)
