@@ -2,9 +2,19 @@ name: R-CMD-check
 
 on:
   workflow_dispatch:
+
   push:
     branches: [main, master]
+    paths-ignore:
+      - 'README.md'
+      - 'README.Rmd'
+      - 'CITATION.cff'
+
   pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'README.Rmd'
+      - 'CITATION.cff'
 
 jobs:
   R-CMD-check:
